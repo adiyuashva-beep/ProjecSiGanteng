@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wali Murid - SiGanteng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- GAYA CLEAN & FOKUS --- */
+        body { margin: 0; font-family: 'Outfit', sans-serif; background: #f1f5f9; display: flex; justify-content: center; align-items: center; height: 100vh; color: #1e293b; }
+        .container { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); width: 85%; max-width: 400px; text-align: center; }
+        
+        .header { border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
+        .header h2 { margin: 0; font-weight: 700; color: #0f172a; }
+        
+        /* BOX STATUS */
+        .status-box { padding: 30px; border-radius: 15px; font-weight: 700; margin-bottom: 20px; }
+        .status-box h1 { margin: 0 0 10px; font-size: 3em; }
+        .status-box p { margin: 0; font-size: 1em; }
+
+        .st-hadir { background: #dcfce7; color: #166534; border: 1px solid #166534; }
+        .st-izin { background: #fef3c7; color: #b45309; border: 1px solid #b45309; }
+        .st-alpha { background: #fee2e2; color: #991b1b; border: 1px solid #991b1b; }
+        .st-loading { background: #f1f5f9; color: #64748b; }
+
+        .btn-logout { background: #ef4444; color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-logout:hover { background: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2 style="color:#3b82f6;">Pantau Anak</h2>
+            <p id="info-anak" style="margin:5px 0 0; color:#64748b; font-size:14px;"></p>
+        </div>
+
+        <div id="status-display" class="status-box st-loading">
+            <h1>⏳</h1>
+            <p>Memuat Status Hari Ini...</p>
+        </div>
+        
+        <button class="btn-logout" onclick="logout()">Keluar & Ganti Akun Anak</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="./assets/js/firebase_config.js"></script>
+
+    <script>
+        // === 1. CEK LOGIN & DATA ANAK ===
+        const user = JSON.parse(localStorage.getItem('userLoggedIn'));
+        if(!user || user.role !== 'wali') {
+            window.location.replace('index.html');
+        }
+
+        document.getElementById('info-anak').innerHTML = `
+            ${user.nama} (${user.kelas})
+            <br>
+            <span style="font-weight:600; font-size:0.8em; color:#3b82f6;">NIS: ${user.username}</span>
+        `;
+
+        // === 2. FIREBASE LISTENER ===
+        const today = new Date().toISOString().split('T')[0];
+        // Kunci Data Absen: USERNAME (NIS ANAK)
+        const dbRef = firebase.database().ref(`absensi/${today}/${user.username}`); 
+        const display = document.getElementById('status-display');
+
+        dbRef.on('value', snap => {
+            const data = snap.val();
+            
+            if(data) {
+                if(data.status === 'Hadir') {
+                    display.className = 'status-box st-hadir';
+                    display.innerHTML = `<h1>✅ HADIR</h1><p>Masuk Jam: ${data.jam_masuk}</p>`;
+                } else if (data.status === 'Izin') {
+                    display.className = 'status-box st-izin';
+                    display.innerHTML = `<h1>⚠️ IZIN</h1><p>Alasan: ${data.keterangan || 'Lapor Izin'}</p>`;
+                } else if (data.jam_pulang) {
+                    display.className = 'status-box st-hadir';
+                    display.innerHTML = `<h1>✅ SELESAI</h1><p>Masuk: ${data.jam_masuk}, Pulang: ${data.jam_pulang}</p>`;
+                }
+            } else {
+                // Alpha / Belum Absen
+                display.className = 'status-box st-alpha';
+                display.innerHTML = `<h1>❌ BELUM ABSEN</h1><p>Anak belum melakukan absensi hari ini.</p>`;
+            }
+        });
+
+        function logout() { 
+            localStorage.removeItem('userLoggedIn'); 
+            window.location.replace('index.html'); 
+        }
+    </script>
+</body>
+</html>

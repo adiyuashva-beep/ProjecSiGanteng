@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Siswa - SiGanteng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- GAYA TAMPILAN GANTENG (TIDAK DIUBAH) --- */
+        body { margin: 0; font-family: 'Outfit', sans-serif; background: #f1f5f9; color: #1e293b; -webkit-tap-highlight-color: transparent; }
+        
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 25px 25px 80px;
+            border-bottom-left-radius: 40px; border-bottom-right-radius: 40px;
+            color: white; position: relative;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.3);
+        }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .brand { font-size: 14px; font-weight: 700; letter-spacing: 1px; opacity: 0.8; }
+        .btn-out { 
+            background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 50px; 
+            font-size: 11px; color: white; border: 1px solid rgba(255,255,255,0.1); cursor: pointer;
+        }
+        .user-info h1 { margin: 0; font-size: 22px; font-weight: 700; }
+        .badge { background: #3b82f6; padding: 3px 10px; border-radius: 6px; font-size: 10px; margin-top: 5px; display: inline-block; }
+
+        /* JAM & STATUS */
+        .status-container {
+            margin: -50px 20px 20px; background: white; padding: 20px; border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.05); text-align: center; position: relative; z-index: 10;
+        }
+        .jam-besar { font-size: 42px; font-weight: 800; color: #0f172a; line-height: 1; letter-spacing: -1px; }
+        .tgl-kecil { font-size: 12px; color: #64748b; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .status-badge { 
+            margin-top: 15px; display: inline-block; padding: 8px 16px; 
+            border-radius: 50px; font-size: 12px; font-weight: 600;
+        }
+        .bg-merah { background: #fee2e2; color: #991b1b; }
+        .bg-hijau { background: #dcfce7; color: #166534; }
+        .bg-kuning { background: #fef3c7; color: #b45309; }
+
+        /* TOMBOL MENU */
+        .grid-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px 20px; }
+        .btn-card {
+            background: white; border: none; border-radius: 20px; padding: 20px;
+            text-align: left; height: 130px; display: flex; flex-direction: column; justify-content: space-between;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03); transition: 0.2s; cursor: pointer; position: relative; overflow: hidden;
+        }
+        .btn-card:active { transform: scale(0.97); }
+        .btn-card h3 { margin: 0; font-size: 16px; font-weight: 700; z-index: 2; }
+        .btn-card p { margin: 5px 0 0; font-size: 11px; opacity: 0.7; z-index: 2; }
+        .icon-btn { font-size: 32px; margin-bottom: 10px; z-index: 2; }
+        
+        .card-masuk { background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); color: #1e3a8a; border: 1px solid #dbeafe; }
+        .card-pulang { background: linear-gradient(135deg, #fff7ed 0%, #ffffff 100%); color: #9a3412; border: 1px solid #ffedd5; }
+        
+        /* TOMBOL IZIN */
+        .area-izin { padding: 0 20px 50px; }
+        .btn-izin {
+            width: 100%; padding: 15px; border-radius: 15px; border: 1px solid #fef3c7;
+            background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%); color: #b45309;
+            font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        }
+
+        /* MODAL POPUP (KAMERA & FORM IZIN) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95); z-index: 999;
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-box { width: 90%; max-width: 350px; background: white; border-radius: 25px; overflow: hidden; position: relative; padding: 20px; }
+        
+        /* KAMERA FRAME */
+        .viewfinder { position: relative; width: 100%; height: 350px; background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 15px; }
+        video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .corner { position: absolute; width: 30px; height: 30px; border: 4px solid #3b82f6; border-radius: 4px; z-index: 5; }
+        .tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .bl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+        .br { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+
+        /* TEXT AREA IZIN */
+        textarea { width: 100%; height: 100px; padding: 10px; border: 2px solid #e2e8f0; border-radius: 10px; font-family: inherit; margin-bottom: 15px; box-sizing: border-box;}
+
+        .btn-action { width: 100%; padding: 12px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; color: white; margin-bottom: 10px; }
+        .btn-primary { background: #3b82f6; }
+        .btn-jepret { background: #ef4444; height: 50px; font-size: 18px; }
+        .btn-batal { background: transparent; color: #64748b; text-decoration: underline; font-size: 13px; cursor: pointer; width: 100%; text-align: center; border: none;}
+
+        .disabled { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="top-bar">
+            <div class="brand">SMAN 1 PEJAGOAN</div>
+            <div class="btn-out" onclick="logout()">KELUAR</div>
+        </div>
+        <div class="user-info">
+            <p>Halo, Siswa Teladan</p>
+            <h1 id="nama-siswa">Memuat...</h1>
+            <span class="badge" id="kelas-siswa">...</span>
+        </div>
+    </div>
+
+    <div class="status-container">
+        <div class="jam-besar" id="jam-real">00:00</div>
+        <div class="tgl-kecil" id="tgl-real">...</div>
+        <div class="status-badge bg-merah" id="badge-status">Cek Status...</div>
+    </div>
+
+    <div class="grid-menu">
+        <button class="btn-card card-masuk" id="btn-masuk" onclick="validasiAbsen('masuk')">
+            <div class="icon-btn">📸</div>
+            <div><h3>Absen Masuk</h3><p>Mulai aktivitas</p></div>
+        </button>
+
+        <button class="btn-card card-pulang" id="btn-pulang" onclick="validasiAbsen('pulang')">
+            <div class="icon-btn">🏠</div>
+            <div><h3>Absen Pulang</h3><p>Selesai aktivitas</p></div>
+        </button>
+    </div>
+
+    <div class="area-izin">
+        <button class="btn-izin" id="btn-izin" onclick="bukaModalIzin()">
+            <span>📩</span> Saya Izin Tidak Masuk
+        </button>
+    </div>
+
+    <div class="modal-overlay" id="modal-cam">
+        <div class="modal-box">
+            <div class="viewfinder">
+                <div class="corner tl"></div><div class="corner tr"></div>
+                <div class="corner bl"></div><div class="corner br"></div>
+                <video id="video" autoplay playsinline></video>
+            </div>
+            <button class="btn-action btn-jepret" onclick="jepretFoto()">📸 AMBIL FOTO</button>
+            <div id="status-kirim" style="display:none; text-align:center; font-weight:bold; color:#3b82f6; margin-bottom:10px;">Mengirim Data...</div>
+            <button class="btn-batal" onclick="tutupModal()">Batal</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-form-izin">
+        <div class="modal-box">
+            <h3 style="margin-top:0;">Form Izin</h3>
+            <p style="font-size:13px; color:#64748b;">Silakan tulis alasan kenapa tidak bisa hadir hari ini:</p>
+            <textarea id="alasan-izin" placeholder="Contoh: Sakit demam, Ada acara keluarga, dll..."></textarea>
+            <button class="btn-action btn-primary" onclick="kirimIzin()">KIRIM IZIN</button>
+            <button class="btn-batal" onclick="tutupModal()">Batal</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="./assets/js/firebase_config.js"></script>
+
+    <script>
+        // === 1. CONFIG & STATE ===
+        // SETTING JAM PULANG (Ganti angka ini jika kebijakan berubah)
+        const JAM_TARGET = 15;   // Jam 15
+        const MENIT_TARGET = 30; // Menit 30
+        
+        let modeAktif = '';
+        let lokasiUser = '-'; 
+        let user = {};
+
+        // === 2. CEK USER LOGIN ===
+        try {
+            const sesi = localStorage.getItem('userLoggedIn');
+            if(!sesi) window.location.replace('index.html');
+            user = JSON.parse(sesi);
+        } catch(e) { window.location.replace('index.html'); }
+
+        document.getElementById('nama-siswa').innerText = user.nama || "Siswa";
+        document.getElementById('kelas-siswa').innerText = user.kelas || "-";
+
+        // === 3. JAM REALTIME ===
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('jam-real').innerText = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+            document.getElementById('tgl-real').innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'});
+        }, 1000);
+
+        // === 4. FIREBASE LISTENER ===
+        const today = new Date().toISOString().split('T')[0];
+        const userKey = user.username; 
+        const dbRef = firebase.database().ref(`absensi/${today}/${userKey}`);
+
+        dbRef.on('value', snap => {
+            const data = snap.val();
+            updateTampilan(data);
+        });
+
+        function updateTampilan(data) {
+            const btnMasuk = document.getElementById('btn-masuk');
+            const btnPulang = document.getElementById('btn-pulang');
+            const btnIzin = document.getElementById('btn-izin');
+            const badge = document.getElementById('badge-status');
+
+            if(data) {
+                if (data.status === "Izin") {
+                    badge.innerText = "Izin: " + data.keterangan; badge.className = "status-badge bg-kuning";
+                    matikanTombol(btnMasuk); matikanTombol(btnPulang); matikanTombol(btnIzin);
+                } else if(data.jam_pulang) {
+                    badge.innerText = "Selesai Hari Ini ✅"; badge.className = "status-badge bg-hijau";
+                    matikanTombol(btnMasuk); matikanTombol(btnPulang); matikanTombol(btnIzin);
+                } else {
+                    badge.innerText = `Hadir: ${data.jam_masuk}`; badge.className = "status-badge bg-hijau";
+                    matikanTombol(btnMasuk); matikanTombol(btnIzin);
+                    hidupkanTombol(btnPulang);
+                }
+            } else {
+                badge.innerText = "Belum Absen ❌"; badge.className = "status-badge bg-merah";
+                hidupkanTombol(btnMasuk); matikanTombol(btnPulang); hidupkanTombol(btnIzin);
+            }
+        }
+
+        function matikanTombol(btn) { btn.classList.add('disabled'); btn.onclick = null; }
+        function hidupkanTombol(btn) { 
+            btn.classList.remove('disabled');
+            if(btn.id === 'btn-masuk') btn.onclick = () => validasiAbsen('masuk');
+            if(btn.id === 'btn-pulang') btn.onclick = () => validasiAbsen('pulang');
+            if(btn.id === 'btn-izin') btn.onclick = () => bukaModalIzin();
+        }
+
+        // === 5. LOGIC ABSEN MASUK/PULANG (YANG DIPERBAIKI) ===
+        function validasiAbsen(mode) {
+            modeAktif = mode;
+
+            // Cek GPS dulu
+            if(navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    lokasiUser = `${pos.coords.latitude}, ${pos.coords.longitude}`;
+                });
+            }
+
+            // --- LOGIKA PERINGATAN PULANG GASIK (TIME GUARD) ---
+            if(mode === 'pulang') {
+                const now = new Date();
+                const jamSkrg = now.getHours();
+                const menitSkrg = now.getMinutes();
+
+                // Cek apakah BELUM jam 15:30 (Mulai dari jam 00:00 sampai 15:29)
+                if (jamSkrg < JAM_TARGET || (jamSkrg === JAM_TARGET && menitSkrg < MENIT_TARGET)) {
+                    
+                    // Peringatan 1: Waktu
+                    if(!confirm("⚠️ PERINGATAN:\nSekarang belum jam pulang (15:30 WIB).\n\nApakah Anda yakin ingin absen pulang?")) {
+                        return; // Kalau klik Batal, berhenti di sini
+                    }
+
+                    // Peringatan 2: Izin Sekolah (Sesuai Request Ndan)
+                    if(!confirm("🔐 KONFIRMASI IZIN:\nPastikan Anda SUDAH MENDAPAT IZIN dari Guru Piket/Sekolah untuk pulang lebih awal.\n\nSistem akan mencatat waktu pulang Anda.\nLanjutkan Absen Pulang?")) {
+                        return; // Kalau klik Batal, berhenti di sini
+                    }
+                }
+            }
+            
+            // Kalau lolos peringatan atau emang udah jam pulang, buka kamera
+            bukaKamera();
+        }
+
+        // === 6. KAMERA & PROSES KIRIM ===
+        async function bukaKamera() {
+            document.getElementById('modal-cam').style.display = 'flex';
+            document.querySelector('.btn-jepret').style.display = 'block';
+            document.getElementById('status-kirim').style.display = 'none';
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                document.getElementById('video').srcObject = stream;
+            } catch (err) { alert("Gagal akses kamera: " + err); tutupModal(); }
+        }
+
+        function tutupModal() {
+            const vid = document.getElementById('video');
+            if(vid.srcObject) vid.srcObject.getTracks().forEach(t => t.stop());
+            document.getElementById('modal-cam').style.display = 'none';
+            document.getElementById('modal-form-izin').style.display = 'none';
+        }
+
+        function jepretFoto() {
+            document.querySelector('.btn-jepret').style.display = 'none';
+            document.getElementById('status-kirim').style.display = 'block';
+
+            const now = new Date();
+            const jamStr = now.toLocaleTimeString('id-ID', {hour12: false});
+
+            let dataUpdate = {};
+            if(modeAktif === 'masuk') {
+                dataUpdate = {
+                    nama: user.nama,
+                    kelas: user.kelas,
+                    jam_masuk: jamStr,
+                    lokasi: lokasiUser,
+                    status: "Hadir"
+                };
+            } else {
+                dataUpdate = { jam_pulang: jamStr };
+            }
+
+            dbRef.update(dataUpdate).then(() => {
+                tutupModal();
+                alert(`✅ Sukses Absen ${modeAktif.toUpperCase()}!`);
+            }).catch(err => {
+                alert("Gagal: " + err.message);
+                tutupModal();
+            });
+        }
+
+        // === 7. LOGIC IZIN ===
+        function bukaModalIzin() {
+            document.getElementById('modal-form-izin').style.display = 'flex';
+        }
+
+        function kirimIzin() {
+            const alasan = document.getElementById('alasan-izin').value;
+            if(!alasan) { alert("Mohon isi alasan izin!"); return; }
+
+            const now = new Date();
+            const jamStr = now.toLocaleTimeString('id-ID', {hour12: false});
+
+            const dataIzin = {
+                nama: user.nama,
+                kelas: user.kelas,
+                jam_masuk: jamStr,
+                status: "Izin",
+                keterangan: alasan,
+                lokasi: "Izin (Rumah)"
+            };
+
+            dbRef.update(dataIzin).then(() => {
+                tutupModal();
+                alert("✅ Izin Berhasil Dikirim!");
+            }).catch(err => {
+                alert("Gagal kirim izin: " + err.message);
+            });
+        }
+
+        function logout() {
+            if(confirm("Keluar aplikasi?")) { localStorage.removeItem('userLoggedIn'); window.location.replace('index.html'); }
+        }
+    </script>
+</body>
+</html>

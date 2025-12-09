@@ -1,0 +1,68 @@
+<style>
+        /* 1. Body & Centering (Kunci Login Page) */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #3b82f6; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* 2. Kotak Login (Card) */
+        .kotak-login {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .kotak-login h1 { color: #1e293b; margin-bottom: 5px; font-size: 28px; }
+        .kotak-login p { color: #64748b; margin-bottom: 30px; }
+
+        /* 3. Input Fields & Fixes for Mobile Glitch */
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            height: 45px; /* FIX: Memaksa tinggi agar tidak tumpang tindih */
+            box-sizing: border-box; 
+            -webkit-appearance: none; /* FIX: Menghilangkan style default browser */
+            appearance: none; /* FIX: Menghilangkan style default browser */
+        }
+
+        /* 4. Tombol Login */
+        .tombol-login {
+            width: 100%;
+            padding: 15px;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .tombol-login:hover { background-color: #2563eb; }
+        .lupa-password { display: block; margin-top: 20px; color: #3b82f6; text-decoration: none; font-size: 14px; }
+    </style>
