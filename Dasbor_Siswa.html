@@ -188,7 +188,12 @@
         }, 1000);
 
         // === 4. FIREBASE LISTENER ===
-        const today = new Date().toISOString().split('T')[0];
+        // FIX WAKTU LOKAL (WIB)
+const d = new Date();
+const year = d.getFullYear();
+const month = String(d.getMonth() + 1).padStart(2, '0');
+const day = String(d.getDate()).padStart(2, '0');
+const today = `${year}-${month}-${day}`; // Pastikan nama variabelnya sama dengan yang dipakai di bawahnya (today atau tanggal)
         const userKey = user.username; 
         const dbRef = firebase.database().ref(`absensi/${today}/${userKey}`);
 
