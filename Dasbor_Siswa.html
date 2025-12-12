@@ -248,20 +248,34 @@ const today = `${year}-${month}-${day}`; // Pastikan nama variabelnya sama denga
             // --- LOGIKA PERINGATAN PULANG GASIK (TIME GUARD) ---
             if(mode === 'pulang') {
                 const now = new Date();
+                const hari = now.getDay(); // 0=Minggu, 5=Jumat
                 const jamSkrg = now.getHours();
                 const menitSkrg = now.getMinutes();
 
-                // Cek apakah BELUM jam 15:30 (Mulai dari jam 00:00 sampai 15:29)
-                if (jamSkrg < JAM_TARGET || (jamSkrg === JAM_TARGET && menitSkrg < MENIT_TARGET)) {
+                // 1. Tentukan Jam Pulang Sesuai Hari
+                let targetJam = 15;   // Default Senin-Kamis
+                let targetMenit = 30; 
+
+                if (hari === 5) {     // KHUSUS JUMAT
+                    targetJam = 14;
+                    targetMenit = 0;
+                }
+
+                // 2. Cek Apakah Pulang Gasik?
+                if (jamSkrg < targetJam || (jamSkrg === targetJam && menitSkrg < targetMenit)) {
                     
-                    // Peringatan 1: Waktu
-                    if(!confirm("⚠️ PERINGATAN:\nSekarang belum jam pulang (15:30 WIB).\n\nApakah Anda yakin ingin absen pulang?")) {
-                        return; // Kalau klik Batal, berhenti di sini
+                    // Format tampilan jam (biar muncul 14:00 atau 15:30)
+                    const strJam = targetJam.toString().padStart(2, '0');
+                    const strMenit = targetMenit.toString().padStart(2, '0');
+
+                    // Peringatan 1: Waktu (Dinamis sesuai hari)
+                    if(!confirm(`⚠️ PERINGATAN:\nSekarang belum jam pulang (${strJam}:${strMenit} WIB).\n\nApakah Anda yakin ingin absen pulang?`)) {
+                        return; // Kalau klik Batal, berhenti
                     }
 
-                    // Peringatan 2: Izin Sekolah (Sesuai Request Ndan)
+                    // Peringatan 2: Izin Sekolah
                     if(!confirm("🔐 KONFIRMASI IZIN:\nPastikan Anda SUDAH MENDAPAT IZIN dari Guru Piket/Sekolah untuk pulang lebih awal.\n\nSistem akan mencatat waktu pulang Anda.\nLanjutkan Absen Pulang?")) {
-                        return; // Kalau klik Batal, berhenti di sini
+                        return; // Kalau klik Batal, berhenti
                     }
                 }
             }
