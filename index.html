@@ -60,14 +60,16 @@
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         // --- ISI CONFIG FIREBASE KAMU DISINI ---
-        const firebaseConfig = {
-            apiKey: "ISI_API_KEY_KAMU",
-            authDomain: "ISI_AUTH_DOMAIN_KAMU",
-            projectId: "ISI_PROJECT_ID_KAMU",
-            storageBucket: "ISI_STORAGE_BUCKET_KAMU",
-            messagingSenderId: "ISI_MESSAGING_ID",
-            appId: "ISI_APP_ID"
-        };
+       const firebaseConfig = {
+  apiKey: "AIzaSyBXWR-_aJyoMrUjTeNQYlcPD8p3eu58yOo",
+  authDomain: "siganteng-absensi.firebaseapp.com",
+  databaseURL: "https://siganteng-absensi-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "siganteng-absensi",
+  storageBucket: "siganteng-absensi.firebasestorage.app",
+  messagingSenderId: "917873420012",
+  appId: "1:917873420012:web:0fe1a9eddc5f94959ba7c9",
+  measurementId: "G-XK1HSVWWRN"
+};
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
