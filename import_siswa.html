@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Massal Siswa - SiGanteng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; padding: 20px; }
+        .card { box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: none; }
+        textarea { font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="container mt-5" style="max-width: 800px;">
+        <div class="card p-4">
+            <h3 class="mb-3 fw-bold text-primary">📥 Import Massal Siswa</h3>
+            <p class="text-muted">Paste data JSON siswa di sini. Script akan otomatis mengubah NISN menjadi format Teks (String) agar bisa login.</p>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">Data JSON:</label>
+                <textarea id="jsonInput" class="form-control" rows="10" placeholder='[
+    {
+        "nama": "Budi Santoso",
+        "kelas": "X-A",
+        "nisn": "12345",
+        "password": "123"
+    },
+    {
+        "nama": "Siti Aminah",
+        "kelas": "X-B",
+        "nisn": "67890",
+        "password": "123"
+    }
+]'></textarea>
+            </div>
+
+            <button onclick="uploadData()" id="btnUpload" class="btn btn-primary w-100 fw-bold py-3">
+                🚀 MULAI UPLOAD
+            </button>
+            
+            <div id="statusLog" class="mt-3 p-3 bg-light border rounded" style="display:none; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // --- ISI CONFIG FIREBASE KAMU DISINI (WAJIB) ---
+        const firebaseConfig = {
+            apiKey: "ISI_API_KEY_KAMU",
+            authDomain: "ISI_AUTH_DOMAIN_KAMU",
+            projectId: "ISI_PROJECT_ID_KAMU",
+            storageBucket: "ISI_STORAGE_BUCKET_KAMU",
+            messagingSenderId: "ISI_MESSAGING_ID",
+            appId: "ISI_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.uploadData = async function() {
+            const input = document.getElementById('jsonInput').value;
+            const btn = document.getElementById('btnUpload');
+            const log = document.getElementById('statusLog');
+            
+            if(!input) return alert("Data masih kosong!");
+
+            try {
+                const dataSiswa = JSON.parse(input); // Ubah teks jadi Data
+                
+                if(!Array.isArray(dataSiswa)) return alert("Format salah! Harus dimulai dengan kurung siku [ ... ]");
+
+                btn.disabled = true;
+                log.style.display = 'block';
+                log.innerHTML = `⏳ Memulai upload ${dataSiswa.length} siswa...<br>`;
+
+                let sukses = 0;
+                let gagal = 0;
+
+                // LOOPING (PERULANGAN) UTAMA
+                for (let i = 0; i < dataSiswa.length; i++) {
+                    const s = dataSiswa[i];
+                    
+                    try {
+                        // --- INI RAHASIANYA ---
+                        // Kita PAKSA nisn dan password jadi String pakai String()
+                        // Biar nggak ada error tipe data lagi.
+                        const dataFix = {
+                            nama: s.nama,
+                            kelas: s.kelas,
+                            nisn: String(s.nisn),      // <-- DIPAKSA JADI STRING
+                            password: String(s.password), // <-- DIPAKSA JADI STRING
+                            role: 'siswa'
+                        };
+
+                        // Upload ke Collection 'siswa'
+                        // Kita pakai nisn sebagai ID Dokumen biar gak dobel
+                        await setDoc(doc(db, "siswa", dataFix.nisn), dataFix);
+                        
+                        sukses++;
+                        log.innerHTML += `<span class="text-success">✔ ${s.nama} (${s.nisn}) Berhasil.</span><br>`;
+
+                    } catch (err) {
+                        gagal++;
+                        log.innerHTML += `<span class="text-danger">❌ ${s.nama} Gagal: ${err.message}</span><br>`;
+                    }
+                }
+
+                log.innerHTML += `<hr><strong>✅ SELESAI! Sukses: ${sukses}, Gagal: ${gagal}</strong>`;
+                btn.disabled = false;
+                btn.innerText = "UPLOAD SELESAI";
+
+            } catch (e) {
+                alert("Format JSON Error! Cek lagi koma atau kurungnya.\n" + e.message);
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
