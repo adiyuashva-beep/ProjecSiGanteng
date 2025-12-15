@@ -59,7 +59,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // --- ISI CONFIG FIREBASE PUNYAMU DISINI (WAJIB!) ---
+        // --- ISI CONFIG FIREBASE KAMU DISINI ---
         const firebaseConfig = {
             apiKey: "ISI_API_KEY_KAMU",
             authDomain: "ISI_AUTH_DOMAIN_KAMU",
@@ -72,27 +72,19 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // VARIABEL GLOBAL
         window.roleAktif = 'siswa';
 
-        // FUNGSI GANTI TAB (Sama kayak punyamu)
         window.pilihRole = function(role) {
             if(role === 'wali') { alert("Fitur Wali Murid sedang dalam perbaikan."); return; }
-            
             window.roleAktif = role;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            
             if(role === 'siswa') document.getElementById('tab-siswa').classList.add('active');
             if(role === 'admin') document.getElementById('tab-admin').classList.add('active');
             
-            const userPlaceholders = {
-                'siswa': 'Masukkan NISN (Cth: 12345)',
-                'admin': 'Username Admin (Cth: admin)'
-            };
+            const userPlaceholders = { 'siswa': 'Masukkan NISN (Cth: 12345)', 'admin': 'Username Admin (Cth: admin)' };
             document.getElementById('username').placeholder = userPlaceholders[role];
         }
 
-        // FUNGSI LOGIN (SUDAH PAKAI FIREBASE)
         window.prosesLogin = async function(e) {
             e.preventDefault();
             const u = document.getElementById('username').value.trim();
@@ -100,55 +92,54 @@
             const btn = document.getElementById('btn-login');
             const errBox = document.getElementById('errorBox');
 
-            btn.innerText = "Memeriksa...";
+            btn.innerText = "Mencari Data...";
             btn.disabled = true;
             errBox.style.display = 'none';
-            errBox.innerText = "";
 
             try {
                 let userFound = null;
                 let targetPage = '';
 
-                // 1. CEK LOGIN SISWA (Ke Firestore 'siswa')
+                // --- LOGIKA CERDAS SISWA ---
                 if (window.roleAktif === 'siswa') {
-                    const q = query(collection(db, "siswa"), where("nisn", "==", u));
-                    const snap = await getDocs(q);
+                    // 1. Coba Cari sebagai TULISAN (String) dulu
+                    let q = query(collection(db, "siswa"), where("nisn", "==", u));
+                    let snap = await getDocs(q);
                     
+                    // 2. Kalau GAK KETEMU, Coba Cari sebagai ANGKA (Number)
+                    // (Ini buat nyelametin data lama kamu yg 1065 siswa itu)
+                    if(snap.empty) {
+                        q = query(collection(db, "siswa"), where("nisn", "==", Number(u)));
+                        snap = await getDocs(q);
+                    }
+
                     if(snap.empty) throw new Error("NISN tidak ditemukan di Database.");
                     
                     snap.forEach(doc => { userFound = doc.data(); });
                     
-                    // Cek Password
+                    // Cek Password (Ubah semua jadi string biar aman)
                     if (String(userFound.password) !== String(p)) throw new Error("Password Siswa Salah!");
                     
-                    // Tambahan: Simpan username buat kunci absen
-                    userFound.username = userFound.nisn; 
-                    targetPage = 'Dasbor_Siswa.html'; // Sesuai nama file kamu
+                    userFound.username = String(userFound.nisn); // Pastikan username jadi string buat dashboard
+                    targetPage = 'Dasbor_Siswa.html';
                 }
 
-                // 2. CEK LOGIN ADMIN (Ke Firestore 'admins')
+                // --- LOGIKA ADMIN ---
                 else if (window.roleAktif === 'admin') {
                     const q = query(collection(db, "admins"), where("username", "==", u));
                     const snap = await getDocs(q);
-
                     if(snap.empty) throw new Error("Username Admin tidak ditemukan.");
-
                     snap.forEach(doc => { userFound = doc.data(); });
-
                     if (String(userFound.password) !== String(p)) throw new Error("Password Admin Salah!");
-                    
-                    targetPage = 'Dasbor_Guru.html'; // Sesuai nama file kamu
+                    targetPage = 'Dasbor_Guru.html';
                 }
 
-                // JIKA SUKSES
+                // SUKSES
                 localStorage.setItem('userLoggedIn', JSON.stringify(userFound));
-                
                 btn.innerText = "Sukses! Mengalihkan...";
-                btn.style.background = "#22c55e"; // Hijau
+                btn.style.background = "#22c55e";
 
-                setTimeout(() => {
-                    window.location.href = targetPage;
-                }, 1000);
+                setTimeout(() => { window.location.href = targetPage; }, 1000);
 
             } catch (err) {
                 console.error(err);
@@ -156,7 +147,7 @@
                 errBox.innerText = "❌ " + err.message;
                 btn.innerText = "MASUK SEKARANG";
                 btn.disabled = false;
-                btn.style.background = "#3b82f6"; // Biru balik
+                btn.style.background = "#3b82f6";
             }
         }
     </script>
