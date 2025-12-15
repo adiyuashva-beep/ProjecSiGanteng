@@ -20,8 +20,10 @@
         
         button { width: 100%; padding: 15px; background: #3b82f6; color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); }
         button:hover { background: #2563eb; transform: translateY(-2px); }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
         
         .footer { margin-top: 20px; font-size: 12px; color: #94a3b8; }
+        .error-msg { color: #ef4444; font-size: 13px; margin-bottom: 15px; display: none; }
     </style>
 </head>
 <body>
@@ -30,100 +32,132 @@
         <h3>Login SiGanteng</h3>
         
         <div class="tab-group">
-            <div class="tab active" onclick="pilihRole('siswa')">Siswa</div>
-            <div class="tab" onclick="pilihRole('admin')">Guru</div>
-            <div class="tab" onclick="pilihRole('wali')">Wali</div>
+            <div class="tab active" id="tab-siswa" onclick="pilihRole('siswa')">Siswa</div>
+            <div class="tab" id="tab-admin" onclick="pilihRole('admin')">Guru</div>
+            <div class="tab" id="tab-wali" onclick="pilihRole('wali')" style="opacity: 0.5;">Wali</div>
         </div>
 
+        <div id="errorBox" class="error-msg"></div>
+
         <form onsubmit="prosesLogin(event)">
-            <input type="text" id="username" placeholder="NIS / Username" required>
+            <input type="text" id="username" placeholder="Masukkan NISN" required>
             <input type="password" id="password" placeholder="Kata Sandi" required>
             <button type="submit" id="btn-login">MASUK SEKARANG</button>
         </form>
+
         <div style="text-align: center; margin-top: 15px;">
-    <p style="color: #94a3b8; font-size: 14px;">
-        Lupa NISN? 
-        <a href="cek_nisn.html" style="color: #38bdf8; font-weight: bold; text-decoration: none;">Cari Disini</a>
-    </p>
-</div>
+            <p style="color: #94a3b8; font-size: 14px;">
+                Lupa NISN? 
+                <a href="cek_nisn.html" style="color: #38bdf8; font-weight: bold; text-decoration: none;">Cari Disini</a>
+            </p>
+        </div>
 
         <div class="footer">SMAN 1 PEJAGOAN © 2025</div>
     </div>
 
-    <script src="./assets/js/data_sekolah.js"></script>
-    
-    <script>
-        let roleAktif = 'siswa';
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // Cek apakah file data_sekolah.js sudah terhubung
-        if (typeof dataSiswa === 'undefined') {
-            alert("⚠️ PERINGATAN: File 'assets/js/data_sekolah.js' belum ditemukan atau kosong! Aplikasi tidak bisa berjalan.");
-        }
+        // --- ISI CONFIG FIREBASE PUNYAMU DISINI (WAJIB!) ---
+        const firebaseConfig = {
+            apiKey: "ISI_API_KEY_KAMU",
+            authDomain: "ISI_AUTH_DOMAIN_KAMU",
+            projectId: "ISI_PROJECT_ID_KAMU",
+            storageBucket: "ISI_STORAGE_BUCKET_KAMU",
+            messagingSenderId: "ISI_MESSAGING_ID",
+            appId: "ISI_APP_ID"
+        };
 
-        function pilihRole(role) {
-            roleAktif = role;
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // VARIABEL GLOBAL
+        window.roleAktif = 'siswa';
+
+        // FUNGSI GANTI TAB (Sama kayak punyamu)
+        window.pilihRole = function(role) {
+            if(role === 'wali') { alert("Fitur Wali Murid sedang dalam perbaikan."); return; }
+            
+            window.roleAktif = role;
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
+            
+            if(role === 'siswa') document.getElementById('tab-siswa').classList.add('active');
+            if(role === 'admin') document.getElementById('tab-admin').classList.add('active');
             
             const userPlaceholders = {
-                'siswa': 'Masukkan NIS / Username',
-                'admin': 'Username Guru',
-                'wali': 'NIS Anak'
+                'siswa': 'Masukkan NISN (Cth: 12345)',
+                'admin': 'Username Admin (Cth: admin)'
             };
             document.getElementById('username').placeholder = userPlaceholders[role];
         }
 
-        function prosesLogin(e) {
+        // FUNGSI LOGIN (SUDAH PAKAI FIREBASE)
+        window.prosesLogin = async function(e) {
             e.preventDefault();
-            const u = document.getElementById('username').value.trim(); // Hapus spasi ngga sengaja
+            const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
             const btn = document.getElementById('btn-login');
+            const errBox = document.getElementById('errorBox');
 
             btn.innerText = "Memeriksa...";
-            
-            setTimeout(() => {
+            btn.disabled = true;
+            errBox.style.display = 'none';
+            errBox.innerText = "";
+
+            try {
                 let userFound = null;
+                let targetPage = '';
 
-                // 1. LOGIKA LOGIN GURU / ADMIN
-                if (roleAktif === 'admin') {
-                    // Cek di array dataAdmin (Pastikan ada di data_sekolah.js)
-                    if (typeof dataAdmin !== 'undefined') {
-                        userFound = dataAdmin.find(d => d.username === u && d.password === p);
-                    }
-                    // Fallback manual kalau dataAdmin belum dibuat
-                    if (!userFound && u === 'admin' && p === '123') {
-                        userFound = { nama: 'Administrator', role: 'admin', username: 'admin' };
-                    }
-                } 
-                // 2. LOGIKA LOGIN SISWA
-                else if (roleAktif === 'siswa') {
-                    // Cek username (NIS) & Password
-                    userFound = dataSiswa.find(d => d.username === u && d.password === p);
-                }
-                // 3. LOGIKA LOGIN WALI
-                else if (roleAktif === 'wali') {
-                    // Wali login pakai NIS anak, password default 'wali' atau '123'
-                    // Disini kita cari data anaknya
-                    const anak = dataSiswa.find(d => d.username === u);
-                    if (anak && (p === 'wali' || p === '123')) {
-                        userFound = { ...anak, role: 'wali' }; // Pinjam data anak, ganti role jadi wali
-                    }
-                }
-
-                // EKSEKUSI HASIL
-                if (userFound) {
-                    // Simpan data lengkap user ke memori browser
-                    localStorage.setItem('userLoggedIn', JSON.stringify(userFound));
+                // 1. CEK LOGIN SISWA (Ke Firestore 'siswa')
+                if (window.roleAktif === 'siswa') {
+                    const q = query(collection(db, "siswa"), where("nisn", "==", u));
+                    const snap = await getDocs(q);
                     
-                    // Arahkan ke halaman sesuai peran
-                    if (roleAktif === 'siswa') window.location.replace('Dasbor_Siswa.html');
-                    else if (roleAktif === 'admin') window.location.replace('Dasbor_Guru.html');
-                    else window.location.replace('Dasbor_Wali.html');
-                } else {
-                    alert("❌ Login Gagal!\nPeriksa Username & Password Anda.");
-                    btn.innerText = "MASUK SEKARANG";
+                    if(snap.empty) throw new Error("NISN tidak ditemukan di Database.");
+                    
+                    snap.forEach(doc => { userFound = doc.data(); });
+                    
+                    // Cek Password
+                    if (String(userFound.password) !== String(p)) throw new Error("Password Siswa Salah!");
+                    
+                    // Tambahan: Simpan username buat kunci absen
+                    userFound.username = userFound.nisn; 
+                    targetPage = 'Dasbor_Siswa.html'; // Sesuai nama file kamu
                 }
-            }, 500); // Efek loading dikit
+
+                // 2. CEK LOGIN ADMIN (Ke Firestore 'admins')
+                else if (window.roleAktif === 'admin') {
+                    const q = query(collection(db, "admins"), where("username", "==", u));
+                    const snap = await getDocs(q);
+
+                    if(snap.empty) throw new Error("Username Admin tidak ditemukan.");
+
+                    snap.forEach(doc => { userFound = doc.data(); });
+
+                    if (String(userFound.password) !== String(p)) throw new Error("Password Admin Salah!");
+                    
+                    targetPage = 'Dasbor_Guru.html'; // Sesuai nama file kamu
+                }
+
+                // JIKA SUKSES
+                localStorage.setItem('userLoggedIn', JSON.stringify(userFound));
+                
+                btn.innerText = "Sukses! Mengalihkan...";
+                btn.style.background = "#22c55e"; // Hijau
+
+                setTimeout(() => {
+                    window.location.href = targetPage;
+                }, 1000);
+
+            } catch (err) {
+                console.error(err);
+                errBox.style.display = 'block';
+                errBox.innerText = "❌ " + err.message;
+                btn.innerText = "MASUK SEKARANG";
+                btn.disabled = false;
+                btn.style.background = "#3b82f6"; // Biru balik
+            }
         }
     </script>
 </body>
