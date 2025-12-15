@@ -71,7 +71,7 @@ const dataSiswa = [
 { nama: 'Mas Dana', username: '1233456', password: '123', kelas: 'Kelas Uji Guru', role: 'siswa' },
 { nama: 'Pak Guru Mulkan', username: '1234567', password: '123', kelas: 'Kelas Uji Guru', role: 'siswa' },
 { nama: 'erwandana', username: '12345678', password: '123', kelas: 'Kelas Uji Guru', role: 'siswa' },
-{ nama: '', username: '', password: '123', kelas: '', role: 'siswa' },
+{ nama: 'ERNA UMU', username: '197508262007012010', password: '123', kelas: 'Kelas Uji Guru', role: 'siswa' },
 
 { nama: "ABDUL HAKIM MUFTI", username: "0085384048", password: "123", kelas: "XII G", role: "siswa" },
 { nama: "ABDULLOH SYAFIQ", username: "0087555402", password: "123", kelas: "XI B", role: "siswa" },
