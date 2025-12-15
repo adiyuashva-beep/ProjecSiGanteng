@@ -6,7 +6,7 @@
     <title>Siswa - SiGanteng</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* --- GAYA TAMPILAN GANTENG (TIDAK DIUBAH) --- */
+        /* --- GAYA TAMPILAN GANTENG --- */
         body { margin: 0; font-family: 'Outfit', sans-serif; background: #f1f5f9; color: #1e293b; -webkit-tap-highlight-color: transparent; }
         
         /* HEADER */
@@ -93,6 +93,17 @@
 
         .disabled { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
 
+        /* --- EFEK BARU: FLASH KAMERA --- */
+        .flash-effect {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; z-index: 10;
+            animation: flashAnim 0.3s ease-out; opacity: 0; pointer-events: none;
+        }
+        @keyframes flashAnim {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
     </style>
 </head>
 <body>
@@ -140,8 +151,10 @@
                 <div class="corner bl"></div><div class="corner br"></div>
                 <video id="video" autoplay playsinline></video>
             </div>
+            
             <button class="btn-action btn-jepret" onclick="jepretFoto()">📸 AMBIL FOTO</button>
             <div id="status-kirim" style="display:none; text-align:center; font-weight:bold; color:#3b82f6; margin-bottom:10px;">Mengirim Data...</div>
+            
             <button class="btn-batal" onclick="tutupModal()">Batal</button>
         </div>
     </div>
@@ -158,24 +171,24 @@
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="./assets/js/firebase_config.js"></script>
+    
+    <script src="firebase_config.js"></script>
 
     <script>
         // === 1. CONFIG & STATE ===
-        // SETTING JAM PULANG (Ganti angka ini jika kebijakan berubah)
-        const JAM_TARGET = 15;   // Jam 15
-        const MENIT_TARGET = 30; // Menit 30
+        const JAM_TARGET = 15;   
+        const MENIT_TARGET = 30; 
         
         let modeAktif = '';
         let lokasiUser = '-'; 
         let user = {};
 
-        // === 2. CEK USER LOGIN ===
+        // === 2. CEK USER LOGIN (Diarahkan ke cek_nisn.html) ===
         try {
             const sesi = localStorage.getItem('userLoggedIn');
-            if(!sesi) window.location.replace('index.html');
+            if(!sesi) window.location.replace('cek_nisn.html'); // <-- INI UBAHANNYA
             user = JSON.parse(sesi);
-        } catch(e) { window.location.replace('index.html'); }
+        } catch(e) { window.location.replace('cek_nisn.html'); } // <-- INI UBAHANNYA
 
         document.getElementById('nama-siswa').innerText = user.nama || "Siswa";
         document.getElementById('kelas-siswa').innerText = user.kelas || "-";
@@ -183,17 +196,22 @@
         // === 3. JAM REALTIME ===
         setInterval(() => {
             const now = new Date();
-            document.getElementById('jam-real').innerText = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
-            document.getElementById('tgl-real').innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'});
+            const jamStr = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+            const tglStr = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'});
+            document.getElementById('jam-real').innerText = jamStr.replace('.', ':');
+            document.getElementById('tgl-real').innerText = tglStr;
         }, 1000);
 
         // === 4. FIREBASE LISTENER ===
-        // FIX WAKTU LOKAL (WIB)
-const d = new Date();
-const year = d.getFullYear();
-const month = String(d.getMonth() + 1).padStart(2, '0');
-const day = String(d.getDate()).padStart(2, '0');
-const today = `${year}-${month}-${day}`; // Pastikan nama variabelnya sama dengan yang dipakai di bawahnya (today atau tanggal)
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const today = `${year}-${month}-${day}`; 
+        
+        // Pastikan firebaseConfig sudah di-load dari file firebase_config.js
+        // Kalau masih error "firebase is not defined", copas isi configmu ke sini langsung.
+        
         const userKey = user.username; 
         const dbRef = firebase.database().ref(`absensi/${today}/${userKey}`);
 
@@ -234,57 +252,40 @@ const today = `${year}-${month}-${day}`; // Pastikan nama variabelnya sama denga
             if(btn.id === 'btn-izin') btn.onclick = () => bukaModalIzin();
         }
 
-        // === 5. LOGIC ABSEN MASUK/PULANG (YANG DIPERBAIKI) ===
+        // === 5. LOGIC ABSEN (GPS + TIME GUARD) ===
         function validasiAbsen(mode) {
             modeAktif = mode;
 
-            // Cek GPS dulu
             if(navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
                     lokasiUser = `${pos.coords.latitude}, ${pos.coords.longitude}`;
                 });
             }
 
-            // --- LOGIKA PERINGATAN PULANG GASIK (TIME GUARD) ---
             if(mode === 'pulang') {
                 const now = new Date();
-                const hari = now.getDay(); // 0=Minggu, 5=Jumat
+                const hari = now.getDay(); 
                 const jamSkrg = now.getHours();
                 const menitSkrg = now.getMinutes();
 
-                // 1. Tentukan Jam Pulang Sesuai Hari
-                let targetJam = 15;   // Default Senin-Kamis
+                let targetJam = 15;   
                 let targetMenit = 30; 
 
-                if (hari === 5) {     // KHUSUS JUMAT
-                    targetJam = 14;
-                    targetMenit = 0;
+                if (hari === 5) { // JUMAT
+                    targetJam = 14; targetMenit = 0;
                 }
 
-                // 2. Cek Apakah Pulang Gasik?
                 if (jamSkrg < targetJam || (jamSkrg === targetJam && menitSkrg < targetMenit)) {
-                    
-                    // Format tampilan jam (biar muncul 14:00 atau 15:30)
                     const strJam = targetJam.toString().padStart(2, '0');
                     const strMenit = targetMenit.toString().padStart(2, '0');
-
-                    // Peringatan 1: Waktu (Dinamis sesuai hari)
-                    if(!confirm(`⚠️ PERINGATAN:\nSekarang belum jam pulang (${strJam}:${strMenit} WIB).\n\nApakah Anda yakin ingin absen pulang?`)) {
-                        return; // Kalau klik Batal, berhenti
-                    }
-
-                    // Peringatan 2: Izin Sekolah
-                    if(!confirm("🔐 KONFIRMASI IZIN:\nPastikan Anda SUDAH MENDAPAT IZIN dari Guru Piket/Sekolah untuk pulang lebih awal.\n\nSistem akan mencatat waktu pulang Anda.\nLanjutkan Absen Pulang?")) {
-                        return; // Kalau klik Batal, berhenti
-                    }
+                    if(!confirm(`⚠️ PERINGATAN:\nSekarang belum jam pulang (${strJam}:${strMenit} WIB).\n\nApakah Anda yakin ingin absen pulang?`)) return;
+                    if(!confirm("🔐 KONFIRMASI IZIN:\nPastikan Anda SUDAH MENDAPAT IZIN dari Guru Piket/Sekolah.\n\nLanjutkan Absen Pulang?")) return;
                 }
             }
-            
-            // Kalau lolos peringatan atau emang udah jam pulang, buka kamera
             bukaKamera();
         }
 
-        // === 6. KAMERA & PROSES KIRIM ===
+        // === 6. KAMERA & LOGIC JEPRET (EFEK BARU) ===
         async function bukaKamera() {
             document.getElementById('modal-cam').style.display = 'flex';
             document.querySelector('.btn-jepret').style.display = 'block';
@@ -292,6 +293,7 @@ const today = `${year}-${month}-${day}`; // Pastikan nama variabelnya sama denga
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
                 document.getElementById('video').srcObject = stream;
+                document.getElementById('video').play(); 
             } catch (err) { alert("Gagal akses kamera: " + err); tutupModal(); }
         }
 
@@ -303,9 +305,30 @@ const today = `${year}-${month}-${day}`; // Pastikan nama variabelnya sama denga
         }
 
         function jepretFoto() {
+            const video = document.getElementById('video');
+            const viewfinder = document.querySelector('.viewfinder');
+            
+            // 1. EFEK FLASH
+            const flash = document.createElement('div');
+            flash.className = 'flash-effect';
+            viewfinder.appendChild(flash);
+            setTimeout(() => flash.remove(), 500);
+
+            // 2. BEKUKAN LAYAR (FREEZE)
+            video.pause();
+
+            // 3. UI LOADING
             document.querySelector('.btn-jepret').style.display = 'none';
             document.getElementById('status-kirim').style.display = 'block';
+            document.getElementById('status-kirim').innerHTML = '📸 Memproses Gambar...';
 
+            // 4. KIRIM DATA (JEDA 1.5 DETIK)
+            setTimeout(() => {
+                kirimDataKeFirebase();
+            }, 1500);
+        }
+
+        function kirimDataKeFirebase() {
             const now = new Date();
             const jamStr = now.toLocaleTimeString('id-ID', {hour12: false});
 
@@ -361,7 +384,11 @@ const today = `${year}-${month}-${day}`; // Pastikan nama variabelnya sama denga
         }
 
         function logout() {
-            if(confirm("Keluar aplikasi?")) { localStorage.removeItem('userLoggedIn'); window.location.replace('index.html'); }
+            // UBAHAN: Logout kembali ke cek_nisn.html
+            if(confirm("Keluar aplikasi?")) { 
+                localStorage.removeItem('userLoggedIn'); 
+                window.location.replace('cek_nisn.html'); 
+            }
         }
     </script>
 </body>
