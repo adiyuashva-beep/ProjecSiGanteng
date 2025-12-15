@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Paksa Bikin Akun</title>
+</head>
+<body>
+    <div style="text-align: center; margin-top: 50px;">
+        <h2>👇 KLIK TOMBOL INI BIAR AKUNNYA JADI 👇</h2>
+        <p>Ini akan membuat akun: <b>12345</b> / Pass: <b>12345</b></p>
+        
+        <button id="btnHajar" onclick="bikinAkunPasti()" style="padding: 20px 40px; font-size: 20px; background: #2563eb; color: white; border: none; border-radius: 10px; cursor: pointer;">
+            🛠️ BUAT AKUN TEST SEKARANG
+        </button>
+        <p id="status" style="margin-top: 20px; font-weight: bold;"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        // --- INI CONFIG ASLIMU YANG SUDAH SAYA PASANG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXWR-_aJyoMrUjTeNQYlcPD8p3eu58yOo",
+            authDomain: "siganteng-absensi.firebaseapp.com",
+            databaseURL: "https://siganteng-absensi-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "siganteng-absensi",
+            storageBucket: "siganteng-absensi.firebasestorage.app",
+            messagingSenderId: "917873420012",
+            appId: "1:917873420012:web:0fe1a9eddc5f94959ba7c9",
+            measurementId: "G-XK1HSVWWRN"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.bikinAkunPasti = async function() {
+            const btn = document.getElementById('btnHajar');
+            const status = document.getElementById('status');
+            
+            btn.disabled = true;
+            btn.innerText = "⏳ Sedang Membuat...";
+            status.innerText = "Menghubungkan ke Firebase...";
+
+            try {
+                // Kita PAKSA bikin data ini di database
+                await setDoc(doc(db, "siswa", "12345"), {
+                    nama: "Siswa Percobaan",
+                    kelas: "X-TEST",
+                    nisn: "12345",      // Pasti String (Teks)
+                    password: "12345",  // Pasti String (Teks)
+                    role: "siswa"
+                });
+
+                status.style.color = "green";
+                status.innerText = "✅ SUKSES! Akun 12345 berhasil dibuat.";
+                alert("✅ AKUN SUDAH JADI!\nNISN: 12345\nPASS: 12345\n\nSekarang buka index.html dan Login!");
+                
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerText = "COBA LAGI";
+                status.style.color = "red";
+                status.innerText = "❌ Gagal: " + error.message;
+                alert("Masih Gagal Ndan: " + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
