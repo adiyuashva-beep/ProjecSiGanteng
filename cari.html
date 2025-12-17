@@ -37,6 +37,9 @@
         
         /* TOMBOL KEMBALI */
         .fab-back { position: fixed; bottom: 20px; right: 20px; background: #ef4444; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); text-decoration: none; z-index: 20; }
+        
+        /* Loading Spinner */
+        .loading-text { color: #38bdf8; text-align: center; margin-top: 20px; display: none; }
     </style>
 </head>
 <body>
@@ -51,44 +54,104 @@
         <div class="search-box">
             <div class="input-group">
                 <i class='bx bx-search'></i>
-                <input type="text" id="input-cari" placeholder="Contoh: Budi atau X-1..." onkeyup="cariSiswa()">
+                <input type="text" id="input-cari" placeholder="Tunggu sebentar..." disabled onkeyup="cariSiswa()">
             </div>
+        </div>
+
+        <div id="loadingIndicator" class="loading-text">
+            <i class='bx bx-loader-alt bx-spin'></i> Sedang mengambil data siswa...
         </div>
 
         <div class="result-list" id="hasil-cari">
             <div class="empty-state">
                 <i class='bx bx-ghost' style="font-size: 40px; margin-bottom:10px;"></i><br>
-                Belum ada pencarian.<br>Ketik minimal 3 huruf.
+                Data sedang dimuat...
             </div>
         </div>
     </div>
 
     <a href="index.html" class="fab-back"><i class='bx bx-arrow-back'></i></a>
 
-    <script src="./assets/js/data_sekolah.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBXWR-_aJyoMrUjTeNQYlcPD8p3eu58yOo",
+            authDomain: "siganteng-absensi.firebaseapp.com",
+            projectId: "siganteng-absensi",
+            storageBucket: "siganteng-absensi.firebasestorage.app",
+            messagingSenderId: "917873420012",
+            appId: "1:917873420012:web:0fe1a9eddc5f94959ba7c9"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Variabel penampung data (pengganti data_sekolah.js)
+        let dataSiswa = [];
+
+        // === 1. AMBIL DATA DARI FIREBASE SAAT HALAMAN DIBUKA ===
+        window.onload = async function() {
+            const input = document.getElementById('input-cari');
+            const loading = document.getElementById('loadingIndicator');
+            const container = document.getElementById('hasil-cari');
+
+            loading.style.display = 'block';
+
+            try {
+                // Ambil semua data users (Siswa & Guru)
+                // Tenang Ndan, 1000 data cuma beberapa KB (Kecil)
+                const snapshot = await db.collection('users').get();
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    // Kita hanya butuh yang role-nya 'siswa'
+                    if(data.role === 'siswa') {
+                        dataSiswa.push({
+                            nama: data.nama,
+                            kelas: data.kelas || 'Siswa',
+                            username: data.username // Ini NISN
+                        });
+                    }
+                });
+
+                // Selesai Load
+                loading.style.display = 'none';
+                input.disabled = false;
+                input.placeholder = "Contoh: Budi atau X-1...";
+                input.focus();
+                
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class='bx bx-search-alt' style="font-size: 40px; margin-bottom:10px;"></i><br>
+                        Silakan ketik nama untuk mencari.
+                    </div>`;
+
+            } catch (error) {
+                loading.style.display = 'none';
+                console.error("Gagal ambil data:", error);
+                
+                // Pesan Error untuk User
+                let pesan = "Gagal memuat data.";
+                if(error.code === 'permission-denied') {
+                    pesan = "🔐 Akses ditolak!<br>Hubungi Admin untuk membuka izin database.";
+                }
+                
+                container.innerHTML = `<div class="empty-state" style="color:#ef4444">${pesan}</div>`;
+            }
+        };
+
+        // === 2. FUNGSI PENCARIAN (Sama seperti yang lama) ===
         function cariSiswa() {
             const input = document.getElementById('input-cari').value.toLowerCase();
             const container = document.getElementById('hasil-cari');
             
-            // Biar gak berat, cari kalau udah ketik 3 huruf
+            // Biar gak penuh, ketik minimal 3 huruf baru cari
             if(input.length < 3) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <i class='bx bx-loader-circle' style="font-size: 24px;"></i><br>
-                        Ketik minimal 3 huruf...
-                    </div>`;
                 return;
             }
 
-            // Filter Data dari data_sekolah.js
-            // (Pastikan dataSiswa ada isinya)
-            if(typeof dataSiswa === 'undefined') {
-                container.innerHTML = '<p style="text-align:center; color:red">Data Siswa Tidak Ditemukan!</p>';
-                return;
-            }
-
+            // Filter Array di Memori (Cepat!)
             const hasil = dataSiswa.filter(s => 
                 s.nama.toLowerCase().includes(input) || 
                 s.kelas.toLowerCase().includes(input) ||
@@ -103,9 +166,8 @@
                 return;
             }
 
-            // Batasi tampilan cuma 20 biar gak lag kalau kebanyakan
+            // Batasi tampilan cuma 20 biar HP gak berat
             hasil.slice(0, 20).forEach(s => {
-                // Buat elemen
                 const div = document.createElement('div');
                 div.className = 'card-siswa';
                 div.innerHTML = `
@@ -128,8 +190,6 @@
                 const oriHTML = btn.innerHTML;
                 btn.innerHTML = "<i class='bx bx-check'></i> Disalin";
                 btn.classList.add('copied');
-                
-                // Balikin tombol setelah 1.5 detik
                 setTimeout(() => {
                     btn.innerHTML = "<i class='bx bx-copy'></i> Salin";
                     btn.classList.remove('copied');
@@ -137,6 +197,5 @@
             });
         }
     </script>
-
 </body>
 </html>
