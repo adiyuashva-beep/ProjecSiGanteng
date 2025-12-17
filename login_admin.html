@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin - SiGanteng</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #111827 0%, #374151 100%);
+            height: 100vh; display: flex; align-items: center; justify-content: center; font-family: sans-serif;
+        }
+        .login-card {
+            background: white; border-radius: 15px; padding: 40px; width: 100%; max-width: 380px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center;
+        }
+        .btn-login { width: 100%; padding: 12px; font-weight: bold; background: #0f172a; border: none; }
+        .btn-login:hover { background: #334155; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="mb-4">
+            <h1 class="fw-bold mb-0">🔒 ADMIN</h1>
+            <small class="text-muted">SiGanteng Control Panel</small>
+        </div>
+
+        <form onsubmit="event.preventDefault(); cekLogin();">
+            <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="user" placeholder="Username" required>
+                <label>Username</label>
+            </div>
+            <div class="form-floating mb-4">
+                <input type="password" class="form-control" id="pass" placeholder="Password" required>
+                <label>Password</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-login">MASUK DASHBOARD</button>
+        </form>
+        <div id="msg" class="text-danger mt-3 small fw-bold"></div>
+    </div>
+
+    <script>
+        function cekLogin() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+
+            // --- MASTER KEY (KUNCI RAHASIA) ---
+            // Nanti bisa diganti atau ditaruh di database
+            if(u === 'admin' && p === 'admin123') {
+                // Simpan "Tiket Masuk" di browser
+                localStorage.setItem('admin_token', 'RAHASIA_NEGARA_SMAN1');
+                window.location.href = 'dashboard_guru.html';
+            } else {
+                document.getElementById('msg').innerText = "Username / Password Salah!";
+            }
+        }
+    </script>
+</body>
+</html>
