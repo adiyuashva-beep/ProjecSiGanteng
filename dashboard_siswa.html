@@ -3,76 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SiGanteng - Dashboard</title>
+    <title>Dashboard Siswa - SiGanteng</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        body { background-color: #f1f5f9; font-family: 'Poppins', sans-serif; padding-bottom: 100px; user-select: none; }
+        :root { --neon-blue: #3b82f6; --neon-green: #10b981; --neon-red: #ef4444; }
+        body { background-color: #f1f5f9; font-family: 'Outfit', sans-serif; padding-bottom: 100px; user-select: none; }
         
         .header-profile {
             background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
-            color: white; padding: 25px 20px 50px 20px;
+            color: white; padding: 25px 20px 60px 20px;
             border-bottom-left-radius: 35px; border-bottom-right-radius: 35px;
-            margin-bottom: -40px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            margin-bottom: -45px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
 
         .card-info {
             background: white; border-radius: 25px; padding: 25px 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center;
-            border: 1px solid #f1f5f9; margin-bottom: 25px; position: relative; z-index: 10;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); text-align: center;
+            border: 1px solid rgba(0,0,0,0.05); margin-bottom: 25px; position: relative; z-index: 10;
         }
 
-        #mapMini {
-            height: 140px; width: 100%; border-radius: 15px;
-            margin-top: 15px; border: 2px solid #e2e8f0; background: #eee;
+        /* MAP KEREN */
+        #mapContainer {
+            position: relative; margin-top: 15px; border-radius: 15px; overflow: hidden;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+        #mapMini { height: 160px; width: 100%; background: #eee; }
+        
+        .jarak-info {
+            background: rgba(15, 23, 42, 0.9); color: var(--neon-green);
+            padding: 5px 12px; border-radius: 20px; font-size: 0.8em; font-weight: bold;
+            display: inline-block; margin-top: -15px; position: relative; z-index: 20;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid var(--neon-green);
         }
 
         .btn-action {
-            width: 100%; padding: 18px 25px; border-radius: 20px; border: none;
+            width: 100%; padding: 20px; border-radius: 20px; border: none;
             color: white; font-weight: 700; font-size: 1.1rem;
             display: flex; align-items: center; justify-content: space-between;
             transition: transform 0.2s; position: relative; overflow: hidden; margin-bottom: 15px;
-            cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
         .btn-action:active { transform: scale(0.97); }
+        .btn-action i { font-size: 1.5rem; opacity: 0.8; }
         
-        .btn-masuk { background: linear-gradient(to right, #2563eb, #1d4ed8); }
-        .btn-pulang { background: linear-gradient(to right, #dc2626, #b91c1c); }
-        .btn-keluar { background: linear-gradient(to right, #f59e0b, #d97706); }
-        .btn-kembali { background: linear-gradient(to right, #10b981, #059669); }
+        .btn-masuk { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .btn-pulang { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .btn-keluar { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-kembali { background: linear-gradient(135deg, #10b981, #059669); }
+        
         .btn-sakit { background: #64748b; margin-top: 10px; font-size: 0.9rem; padding: 15px; color:white; width:100%; border:none; border-radius:15px; }
 
         #modalKamera {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 9999;
+            background: #0f172a; z-index: 9999;
             display: none; align-items: center; justify-content: center; flex-direction: column;
         }
         .camera-frame {
-            position: relative; width: 85%; max-width: 320px; aspect-ratio: 3/4;
-            border-radius: 20px; overflow: hidden; border: 3px solid white; background: #000;
+            position: relative; width: 90%; max-width: 400px; aspect-ratio: 3/4;
+            border-radius: 20px; overflow: hidden; border: 4px solid var(--neon-blue); background: #000;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.3);
         }
         #videoStream { width: 100%; height: 100%; object-fit: cover; }
         .btn-jepret {
             width: 70px; height: 70px; background: white; border-radius: 50%;
-            border: 5px solid rgba(255,255,255,0.3); margin-top: 25px; cursor: pointer;
+            border: 6px solid rgba(255,255,255,0.3); margin-top: 30px; cursor: pointer;
+            transition: 0.2s;
         }
+        .btn-jepret:active { transform: scale(0.9); background: var(--neon-blue); }
 
         .riwayat-item {
-            background: white; border-radius: 12px; padding: 12px 15px;
-            margin-bottom: 8px; border-left: 4px solid #cbd5e1;
+            background: white; border-radius: 12px; padding: 15px;
+            margin-bottom: 10px; border-left: 5px solid #cbd5e1;
             box-shadow: 0 2px 5px rgba(0,0,0,0.03); font-size: 0.9rem; text-align: left;
+            display: flex; justify-content: space-between; align-items: center;
         }
         
-        /* ALERT GPS */
-        #alertGPS { color: #dc3545; font-size: 0.8rem; font-weight: bold; margin-top: 5px; display: none; }
+        #alertGPS { color: #dc3545; font-size: 0.8rem; font-weight: bold; margin-top: 10px; display: none; }
 
         #loadingOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.9); z-index: 99999;
+            background: rgba(15, 23, 42, 0.95); z-index: 99999;
             display: none; flex-direction: column; align-items: center; justify-content: center;
+            color: white;
         }
     </style>
 </head>
@@ -80,76 +98,110 @@
 
     <div class="header-profile">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h5 class="fw-bold m-0"><i class="bi bi-mortarboard-fill"></i> SiGanteng</h5>
-            <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="logout()"><i class="bi bi-box-arrow-right"></i></button>
+            <h5 class="fw-bold m-0 text-info"><i class="bi bi-mortarboard-fill"></i> SiGanteng</h5>
+            <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="logout()">
+                <i class="bi bi-box-arrow-right"></i> Keluar
+            </button>
         </div>
         <div class="d-flex align-items-center gap-3">
-            <img src="" id="fotoProfil" class="rounded-circle border border-3 border-white shadow-sm" width="60" height="60" style="background: #fff;">
+            <img src="" id="fotoProfil" class="rounded-circle border border-3 border-info shadow-sm" width="65" height="65" style="background: #fff;">
             <div>
-                <h4 class="fw-bold m-0" id="namaSiswa">Siswa</h4>
-                <small class="opacity-75" id="infoKelas">NISN: ...</small>
+                <h4 class="fw-bold m-0" id="namaSiswa">Memuat...</h4>
+                <small class="opacity-75" id="infoKelas">...</small>
             </div>
         </div>
     </div>
 
     <div class="container">
         <div class="card-info">
-            <h1 class="fw-bold text-dark m-0" id="jamDigital" style="font-size: 2.8rem; line-height: 1;">00:00</h1>
-            <p id="tanggalDigital" class="text-muted small mb-3">...</p>
-            <div id="statusHariIni" class="badge bg-light text-dark border px-3 py-2 rounded-pill mb-2">Memuat...</div>
+            <h1 class="fw-bold text-dark m-0" id="jamDigital" style="font-size: 3rem; line-height: 1; letter-spacing: -1px;">00:00</h1>
+            <p id="tanggalDigital" class="text-secondary small mb-3 text-uppercase fw-bold">...</p>
             
-            <div id="lokasiStatus" class="small fw-bold text-secondary">
-                <div class="spinner-border spinner-border-sm"></div> Mencari GPS...
+            <div id="statusHariIni" class="badge bg-light text-dark border px-3 py-2 rounded-pill mb-3">Memuat Status...</div>
+            
+            <div id="lokasiStatus" class="small fw-bold text-secondary border-top pt-3">
+                <div class="spinner-border spinner-border-sm text-info"></div> Mencari Satelit GPS...
             </div>
-            <div id="alertGPS">GPS Gagal! Cek Izin Lokasi HP.</div>
             
-            <div id="mapMini"></div>
+            <div id="mapContainer">
+                <div id="mapMini"></div>
+            </div>
+            <div id="jarakBox" style="display:none;">
+                <div class="jarak-info" id="jarakText">Jarak: ... Meter</div>
+            </div>
+
+            <div id="alertGPS">GPS Gagal! Pastikan Izin Lokasi Aktif.</div>
         </div>
 
         <div id="containerTombol">
             <button id="btnMasuk" class="btn-action btn-masuk" onclick="klikMasuk()">
-                <div><small class="d-block opacity-75 fw-normal">Datang?</small><span>ABSEN MASUK</span></div><i class="bi bi-camera-fill"></i>
+                <div>
+                    <small class="d-block opacity-75 fw-normal text-start">Sudah sampai?</small>
+                    <span>ABSEN MASUK</span>
+                </div>
+                <i class="bi bi-fingerprint"></i>
             </button>
 
             <div id="groupDiSekolah" style="display:none;">
                 <button class="btn-action btn-pulang" onclick="klikPulang()">
-                    <div><small class="d-block opacity-75 fw-normal">Selesai?</small><span>ABSEN PULANG</span></div><i class="bi bi-house-door-fill"></i>
+                    <div>
+                        <small class="d-block opacity-75 fw-normal text-start">Waktunya pulang?</small>
+                        <span>ABSEN PULANG</span>
+                    </div>
+                    <i class="bi bi-house-door-fill"></i>
                 </button>
                 <button class="btn-action btn-keluar" onclick="klikIzinKeluar()">
-                    <div><small class="d-block opacity-75 fw-normal">Keperluan?</small><span>IZIN KELUAR</span></div><i class="bi bi-door-open-fill"></i>
+                    <div>
+                        <small class="d-block opacity-75 fw-normal text-start">Perlu keluar sebentar?</small>
+                        <span>IZIN KELUAR</span>
+                    </div>
+                    <i class="bi bi-bicycle"></i>
                 </button>
             </div>
 
             <button id="btnKembali" class="btn-action btn-kembali" onclick="klikKembali()" style="display:none;">
-                <div><small class="d-block opacity-75 fw-normal">Sudah Balik?</small><span>SAYA KEMBALI</span></div><i class="bi bi-arrow-return-left"></i>
+                <div>
+                    <small class="d-block opacity-75 fw-normal text-start">Sudah balik ke sekolah?</small>
+                    <span>SAYA KEMBALI</span>
+                </div>
+                <i class="bi bi-check-circle-fill"></i>
             </button>
 
-            <button class="btn-sakit" onclick="alert('Fitur Sakit Coming Soon')">Form Izin / Sakit (Tidak Masuk)</button>
+            <button class="btn-sakit" onclick="alert('Fitur Upload Surat Dokter akan segera hadir!')">
+                <i class="bi bi-file-earmark-medical"></i> Form Izin / Sakit (Tidak Masuk)
+            </button>
         </div>
 
-        <div class="mt-4">
-            <h6 class="fw-bold mb-3 ps-2 text-dark">Riwayat Hari Ini</h6>
+        <div class="mt-4 pb-5">
+            <h6 class="fw-bold mb-3 ps-2 text-secondary text-uppercase" style="font-size: 0.8rem; letter-spacing: 1px;">Riwayat Hari Ini</h6>
             <div id="listRiwayat"></div>
         </div>
     </div>
 
     <div id="modalKamera">
-        <h5 class="text-white mb-3 fw-bold" id="judulKamera">Foto</h5>
-        <div class="camera-frame"><video id="videoStream" autoplay playsinline muted></video></div>
+        <h5 class="text-white mb-3 fw-bold" id="judulKamera">Ambil Foto Selfie</h5>
+        <div class="camera-frame">
+            <video id="videoStream" autoplay playsinline muted></video>
+        </div>
         <canvas id="canvasFoto" style="display: none;"></canvas>
         <div class="d-flex gap-4 align-items-center mt-4">
-            <button class="btn btn-outline-light rounded-circle p-3" onclick="tutupKamera()">X</button>
+            <button class="btn btn-outline-light rounded-circle p-3" onclick="tutupKamera()"><i class="bi bi-x-lg"></i></button>
             <div class="btn-jepret" onclick="jepretFoto()"></div>
-            <button class="btn btn-outline-light rounded-circle p-3" onclick="gantiKamera()">↺</button>
+            <button class="btn btn-outline-light rounded-circle p-3" onclick="alert('Kamera depan default')"><i class="bi bi-arrow-repeat"></i></button>
         </div>
+        <p class="text-white-50 mt-3 small">Pastikan wajah terlihat jelas</p>
     </div>
 
-    <div id="loadingOverlay"><div class="spinner-grow text-primary"></div><h6 class="fw-bold mt-3">Menyimpan Data...</h6></div>
+    <div id="loadingOverlay">
+        <div class="spinner-border text-info" style="width: 3rem; height: 3rem;" role="status"></div>
+        <h5 class="fw-bold mt-3">Menyimpan Data...</h5>
+        <small>Jangan tutup aplikasi</small>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, arrayUnion, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getStorage, ref, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
         const firebaseConfig = {
@@ -166,53 +218,83 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
 
-        // CONFIG JAM PULANG
+        // --- KONFIGURASI SEKOLAH ---
         const JAM_PULANG_SENIN_KAMIS = 15; const MENIT_PULANG_SENIN_KAMIS = 30; // 15:30
         const JAM_PULANG_JUMAT = 13; const MENIT_PULANG_JUMAT = 40;       // 13:40
         
-        // CONFIG LOKASI
-        const SEKOLAH_LAT = -7.658257; const SEKOLAH_LNG = 109.638708; const RADIUS_METER = 200;
+        // KOORDINAT SEKOLAH
+        const SEKOLAH_LAT = -7.658257; 
+        const SEKOLAH_LNG = 109.638708; 
+        const RADIUS_METER = 500; // Radius Uji Coba agak lebar
         
-        let userSiswa = null, lokasiUser = null, map = null, markerSiswa = null, streamKamera = null, tipeAbsenAktif = "";
-        const getTodayID = () => new Date().toLocaleDateString('fr-CA'); // YYYY-MM-DD
+        let userSiswa = null;
+        let lokasiUser = null;
+        let map = null;
+        let markerSiswa = null;
+        let circleRadius = null;
+        let streamKamera = null;
+        let tipeAbsenAktif = "";
+
+        const getTodayID = () => new Date().toLocaleDateString('fr-CA'); 
 
         document.addEventListener('DOMContentLoaded', () => {
-            const dataLokal = localStorage.getItem('userSiswa');
+            const dataLokal = localStorage.getItem('userSiswa'); 
+            
             if (dataLokal) {
                 userSiswa = JSON.parse(dataLokal);
                 userSiswa.nisn = String(userSiswa.username || userSiswa.nisn);
-                document.getElementById('namaSiswa').innerText = userSiswa.nama;
-                document.getElementById('infoKelas').innerText = userSiswa.kelas;
-                document.getElementById('fotoProfil').src = `https://ui-avatars.com/api/?name=${userSiswa.nama}&background=random&color=fff&size=128`;
                 
-                mulaiJam(); initMap(); cekGPS(); pantauDataRealtime();
-            } else { window.location.href = 'index.html'; }
+                document.getElementById('namaSiswa').innerText = userSiswa.nama || userSiswa.name;
+                document.getElementById('infoKelas').innerText = userSiswa.kelas || "Siswa";
+                document.getElementById('fotoProfil').src = `https://ui-avatars.com/api/?name=${userSiswa.nama}&background=38bdf8&color=fff&size=128&bold=true`;
+                
+                mulaiJam();
+                initMap(); // Peta langsung dimuat
+                cekGPS();
+                pantauDataRealtime();
+            } else {
+                window.location.href = 'index.html'; 
+            }
         });
 
-        // 1. GPS HANDLER (FIX MUTER TERUS)
+        // 1. GPS HANDLER CANGGIH
         function cekGPS() {
             if(navigator.geolocation) {
                 navigator.geolocation.watchPosition(
                     (p) => {
-                        // SUKSES
                         lokasiUser = {lat: p.coords.latitude, lng: p.coords.longitude};
                         
-                        // Update Tampilan biar user tau GPS sudah OK
-                        document.getElementById('lokasiStatus').innerHTML = '<span class="text-success fw-bold"><i class="bi bi-geo-alt-fill"></i> Lokasi Terkunci</span>';
+                        document.getElementById('lokasiStatus').innerHTML = '<span class="text-success fw-bold"><i class="bi bi-geo-alt-fill"></i> GPS Terkunci Akurat</span>';
                         document.getElementById('alertGPS').style.display = 'none';
 
-                        if(!markerSiswa) markerSiswa = L.circleMarker(lokasiUser, {radius:6, color:'red'}).addTo(map);
-                        else markerSiswa.setLatLng(lokasiUser);
-                        
-                        const d = map.distance(lokasiUser, [SEKOLAH_LAT, SEKOLAH_LNG]);
-                        if(d <= RADIUS_METER) markerSiswa.setStyle({color:'green'});
-                        else markerSiswa.setStyle({color:'red'});
+                        // Hitung Jarak
+                        if(map) {
+                            if(!markerSiswa) markerSiswa = L.marker(lokasiUser).addTo(map);
+                            else markerSiswa.setLatLng(lokasiUser);
+                            
+                            const d = map.distance(lokasiUser, [SEKOLAH_LAT, SEKOLAH_LNG]);
+                            
+                            // Tampilkan Jarak
+                            document.getElementById('jarakBox').style.display = 'block';
+                            document.getElementById('jarakText').innerText = `Jarak ke Sekolah: ${Math.round(d)} Meter`;
+
+                            // Visualisasi Radius
+                            if(d <= RADIUS_METER) {
+                                document.getElementById('mapContainer').style.borderColor = "#10b981"; // Hijau
+                                document.getElementById('jarakText').style.color = "#10b981";
+                                document.getElementById('jarakText').style.borderColor = "#10b981";
+                            } else {
+                                document.getElementById('mapContainer').style.borderColor = "#ef4444"; // Merah
+                                document.getElementById('jarakText').style.color = "#ef4444";
+                                document.getElementById('jarakText').style.borderColor = "#ef4444";
+                            }
+                            map.setView(lokasiUser, 16);
+                        }
                     }, 
                     (err) => {
-                        // ERROR
-                        document.getElementById('lokasiStatus').innerHTML = '<span class="text-danger fw-bold">GPS Error!</span>';
+                        document.getElementById('lokasiStatus').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle"></i> Gagal Deteksi Lokasi</span>';
                         document.getElementById('alertGPS').style.display = 'block';
-                        document.getElementById('alertGPS').innerText = "Gagal: " + err.message + ". Cek Izin Lokasi!";
+                        document.getElementById('alertGPS').innerText = "Mohon aktifkan GPS di pengaturan HP!";
                     },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
@@ -241,7 +323,7 @@
                     else if(st == "Pulang") { label = "Sudah Pulang"; cls = "bg-success text-white"; }
                     
                     document.getElementById('statusHariIni').innerText = label;
-                    document.getElementById('statusHariIni').className = `badge px-3 py-2 rounded-pill mb-2 ${cls}`;
+                    document.getElementById('statusHariIni').className = `badge px-3 py-2 rounded-pill mb-3 ${cls}`;
 
                     if (data.riwayat_kegiatan) {
                         [...data.riwayat_kegiatan].reverse().forEach(item => {
@@ -250,27 +332,24 @@
                     }
                 } else {
                     document.getElementById('statusHariIni').innerText = "Belum Absen";
-                    document.getElementById('statusHariIni').className = "badge bg-light text-dark border px-3 py-2 rounded-pill mb-2";
+                    document.getElementById('statusHariIni').className = "badge bg-light text-dark border px-3 py-2 rounded-pill mb-3";
                     document.getElementById('btnMasuk').style.display = 'flex';
                     divRiwayat.innerHTML = '<div class="text-center small text-muted">Belum ada data hari ini</div>';
                 }
             });
         }
 
-        // 3. LOGIKA TOMBOL & PROTEKSI PULANG
+        // 3. LOGIKA TOMBOL & GPS CHECK
         window.klikMasuk = () => { if(validasiGPS()) bukaCam("Masuk"); }
 
         window.klikPulang = () => { 
             if(!validasiGPS()) return;
-
-            // --- PROTEKSI JAM PULANG ---
             const now = new Date();
-            const hari = now.getDay(); // 0=Minggu, 1=Senin... 5=Jumat
+            const hari = now.getDay(); 
             const jam = now.getHours();
             const menit = now.getMinutes();
             const totalMenit = (jam * 60) + menit;
 
-            // Tentukan Target Jam
             let targetJam = JAM_PULANG_SENIN_KAMIS;
             let targetMenit = MENIT_PULANG_SENIN_KAMIS;
             if(hari === 5) { // Jumat
@@ -279,17 +358,10 @@
             }
             const targetTotalMenit = (targetJam * 60) + targetMenit;
 
-            // Cek Waktu
             if (totalMenit < targetTotalMenit) {
-                // Warning Keras
-                const sisaJam = targetJam - jam;
-                const warnMsg = `PERINGATAN!\n\nBelum waktunya pulang (Jadwal: ${targetJam}:${targetMenit}).\nSekarang masih jam ${jam}:${menit}.\n\nJika belum diizinkan, JANGAN dilanjutkan.\n\nApakah Anda yakin ingin Pulang Awal?`;
-                
-                if(!confirm(warnMsg)) {
-                    return; // STOP! Jangan buka kamera.
-                }
+                const warnMsg = `PERINGATAN!\n\nBelum waktunya pulang (Jadwal: ${targetJam}:${targetMenit}).\nTetap ingin absen pulang awal?`;
+                if(!confirm(warnMsg)) return; 
             }
-            // Kalau sudah waktunya, atau nekat klik OK -> Buka Kamera
             bukaCam("Pulang"); 
         }
 
@@ -304,7 +376,6 @@
         // 4. KAMERA & DATA
         function bukaCam(tipe) { tipeAbsenAktif = tipe; document.getElementById('modalKamera').style.display='flex'; navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}}).then(s=>{streamKamera=s;document.getElementById('videoStream').srcObject=s;}); }
         window.tutupKamera = () => { document.getElementById('modalKamera').style.display='none'; if(streamKamera) streamKamera.getTracks().forEach(t=>t.stop()); }
-        window.gantiKamera = () => { /* Logic switch cam */ }
         window.jepretFoto = () => {
             const vid = document.getElementById('videoStream'); const can = document.getElementById('canvasFoto');
             const scale = 480/vid.videoWidth; can.width=480; can.height=vid.videoHeight*scale;
@@ -338,8 +409,18 @@
         }
 
         // UTILS
-        function validasiGPS() { if(!lokasiUser){alert("GPS Belum Terkunci! Tunggu sebentar.");return false;} const d=map.distance(lokasiUser,[SEKOLAH_LAT,SEKOLAH_LNG]); if(d>RADIUS_METER){alert("Anda berada di Luar Radius Sekolah!");return false;} return true; }
-        function initMap() { map=L.map('mapMini',{zoomControl:false}).setView([SEKOLAH_LAT,SEKOLAH_LNG],15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); L.circle([SEKOLAH_LAT,SEKOLAH_LNG],{radius:RADIUS_METER}).addTo(map); }
+        function validasiGPS() { 
+            if(!lokasiUser){alert("GPS Belum Terkunci! Tunggu sebentar.");return false;} 
+            const d=map.distance(lokasiUser,[SEKOLAH_LAT,SEKOLAH_LNG]); 
+            if(d>RADIUS_METER){alert(`Jarakmu ${Math.round(d)} meter. Kejauhan! Harus di Sekolah.`);return false;} 
+            return true; 
+        }
+        function initMap() { 
+            map=L.map('mapMini',{zoomControl:false, attributionControl: false}).setView([SEKOLAH_LAT,SEKOLAH_LNG],16); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map); 
+            // Lingkaran Area Sekolah (Hijau)
+            L.circle([SEKOLAH_LAT,SEKOLAH_LNG],{radius:RADIUS_METER, color:'#10b981', fillColor:'#10b981', fillOpacity:0.1}).addTo(map); 
+        }
         function mulaiJam() { setInterval(()=>{document.getElementById('jamDigital').innerText=new Date().toLocaleTimeString('id-ID'); document.getElementById('tanggalDigital').innerText=new Date().toLocaleDateString('id-ID',{dateStyle:'full'});},1000); }
         window.logout = () => { if(confirm("Keluar?")) { localStorage.clear(); window.location.href='index.html'; } }
     </script>
