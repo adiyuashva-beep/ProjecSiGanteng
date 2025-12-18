@@ -8,11 +8,11 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
     <style>
-        /* SETUP WARNA & CSS DASAR */
+        /* --- SETUP VISUAL (DARK MODE) --- */
         :root { --bg-dark: #0f172a; --card-bg: #1e293b; --neon-blue: #3b82f6; --neon-green: #10b981; --neon-red: #ef4444; --neon-gold: #f59e0b; }
         body { margin: 0; font-family: 'Outfit', sans-serif; background: var(--bg-dark); color: white; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
-        /* HEADER (SEJAJAR RAPI) */
+        /* HEADER */
         .header { 
             height: 12vh; background: rgba(30, 41, 59, 0.95); 
             display: flex; justify-content: space-between; align-items: center; 
@@ -32,24 +32,31 @@
         .waktu { font-size: 2.5em; font-weight: 700; line-height: 1; color: white; }
         .tanggal { font-size: 0.9em; color: var(--neon-blue); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
         
+        /* LAYOUT UTAMA */
         .main-content { flex: 1; display: flex; padding: 15px; gap: 15px; height: 83vh; overflow: hidden; }
-        
         .card-box { background: var(--card-bg); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
         .card-header { padding: 12px; font-weight: 800; font-size: 1em; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
         
-        /* KOLOM GASIK */
+        /* KOLOM KIRI: GASIK (HIJAU) */
         .col-gasik { flex: 1; border-top: 4px solid var(--neon-green); }
         .gasik-header { background: rgba(16, 185, 129, 0.1); color: var(--neon-green); }
         .list-container { flex: 1; overflow-y: auto; padding: 10px; }
         .rank-item { display: flex; align-items: center; padding: 8px 12px; margin-bottom: 6px; background: rgba(255,255,255,0.03); border-radius: 8px; }
-        .rank-num { width: 24px; height: 24px; background: #334155; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-right: 10px; font-size: 0.9em; }
+        
+        .rank-num { width: 24px; height: 24px; background: #334155; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: 800; margin-right: 10px; font-size: 0.9em; flex-shrink: 0; }
         .rank-1 .rank-num { background: var(--neon-gold); color: black; box-shadow: 0 0 10px var(--neon-gold); }
         .rank-2 .rank-num { background: #cbd5e1; color: black; }
         .rank-3 .rank-num { background: #b45309; color: white; }
+        
+        /* FOTO PROFILE DI LIST */
+        .avatar-img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); margin-right: 10px; flex-shrink: 0; background: #000; }
+        .avatar-live { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--neon-blue); flex-shrink: 0; background: #000; }
+        .avatar-telat { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid var(--neon-red); margin-right: 8px; flex-shrink: 0; filter: grayscale(0.8); }
+
         .rank-nama { font-weight: 600; flex: 1; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .rank-jam { color: #4ade80; font-weight: 700; font-family: monospace; font-size: 1.1em; }
 
-        /* KOLOM TENGAH */
+        /* KOLOM TENGAH: STATS & LIVE */
         .col-center { flex: 1.2; display: flex; flex-direction: column; gap: 15px; }
         .stats-wrapper { flex: 1.4; background: var(--card-bg); border-radius: 15px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.05); }
         
@@ -67,14 +74,13 @@
         .stat-item p { margin: 0; font-size: 1.3em; font-weight: 700; }
         .c-hadir { color: var(--neon-green); } .c-izin { color: var(--neon-gold); } .c-alpha { color: var(--neon-red); }
 
-        /* LIVE FEED */
         .live-box { flex: 1; background: var(--card-bg); border-radius: 15px; display: flex; flex-direction: column; overflow: hidden; border-top: 4px solid var(--neon-blue); }
         .live-header { padding: 10px; font-size: 0.9em; font-weight: 700; color: var(--neon-blue); border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(59, 130, 246, 0.05); display: flex; align-items: center; gap: 8px; }
         .live-content { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
         .live-card { background: rgba(255,255,255,0.03); padding: 8px 10px; border-radius: 8px; display: flex; align-items: center; gap: 10px; animation: slideIn 0.5s ease; }
-        .live-card.highlight { background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--neon-blue); }
+        .live-card.highlight { background: rgba(59, 130, 246, 0.2); border-left: 3px solid var(--neon-blue); transform: scale(1.02); }
 
-        /* KOLOM KANAN */
+        /* KOLOM KANAN: TELAT & BELUM */
         .col-right-split { flex: 1; display: flex; flex-direction: column; gap: 15px; }
         .header-badge { background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 4px; font-size: 0.9em; color: white; margin-left: auto; }
         .box-telat { flex: 1; background: var(--card-bg); border-radius: 15px; border: 2px solid rgba(239, 68, 68, 0.5); display: flex; flex-direction: column; overflow: hidden; }
@@ -82,6 +88,7 @@
         .box-belum { flex: 1.5; background: var(--card-bg); border-radius: 15px; border-top: 4px solid #64748b; display: flex; flex-direction: column; overflow: hidden; }
         .belum-header { background: rgba(100, 116, 139, 0.1); color: #94a3b8; padding: 10px 15px; font-weight: 700; font-size: 0.9em; display:flex; align-items:center; }
         .scroller-content { flex: 1; overflow: hidden; padding: 10px; position: relative; }
+        
         .alpha-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: 6px; background: rgba(255,255,255,0.02); margin-bottom: 5px; }
         .row-telat { border-left: 3px solid var(--neon-red); background: rgba(239, 68, 68, 0.05); }
         .row-belum { border-left: 3px solid #64748b; }
@@ -112,9 +119,12 @@
     </div>
 
     <div class="main-content">
+        
         <div class="card-box col-gasik">
             <div class="card-header gasik-header"><i class='bx bxs-trophy'></i> 10 SISWA TER-GASIK</div>
-            <div class="list-container" id="gasik-list"><p style="text-align:center; padding:20px; opacity:0.5;">Menunggu data...</p></div>
+            <div class="list-container" id="gasik-list">
+                <p style="text-align:center; padding:20px; opacity:0.5;">Menunggu data...</p>
+            </div>
         </div>
 
         <div class="col-center">
@@ -128,9 +138,7 @@
                 
                 <div style="margin-bottom: 10px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; width: 100%;">
                     <span style="font-size: 0.8em; color: #94a3b8; font-weight: 600;">TOTAL POPULASI</span>
-                    <div style="font-size: 1.5em; font-weight: 800; color: white;" id="total-populasi">
-                        <span class="spinner-border spinner-border-sm">...</span>
-                    </div>
+                    <div style="font-size: 1.5em; font-weight: 800; color: white;" id="total-populasi">...</div>
                 </div>
                 
                 <div class="stat-grid">
@@ -141,7 +149,7 @@
             </div>
 
             <div class="live-box">
-                <div class="live-header"><i class='bx bxs-radar'></i> BARU SAJA MASUK</div>
+                <div class="live-header"><i class='bx bxs-radar'></i> LIVE FEED (REALTIME)</div>
                 <div id="live-container" class="live-content"></div>
             </div>
         </div>
@@ -172,6 +180,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, query, where, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+        // --- ⚠️ ISI CONFIG ASLI KAMU DISINI ---
         const firebaseConfig = {
             apiKey: "AIzaSyBXWR-_aJyoMrUjTeNQYlcPD8p3eu58yOo",
             authDomain: "siganteng-absensi.firebaseapp.com",
@@ -185,36 +194,52 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // --- PENGATURAN LOGIKA ---
         const JAM_BATAS_TERLAMBAT = "07:00:00"; 
-        const today = new Date().toLocaleDateString('fr-CA'); 
+        const DEFAULT_IMG = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
         
+        // PENTING: Gunakan format tanggal YYYY-MM-DD sesuai databasemu
+        // Untuk hari ini, pakai baris pertama.
+        // Untuk tes data tanggal 16 kemarin, pakai baris kedua (buka komennya).
+        
+        const today = new Date().toLocaleDateString('fr-CA'); // OTOMATIS HARI INI
+        // const today = "2025-12-16"; // MANUAL BUAT TES DATA KEMARIN
+
         let allSiswa = [];      
         let dataAbsenHariIni = []; 
 
+        // SCRIPT JAM DIGITAL POJOK KANAN
         setInterval(() => {
             const now = new Date();
             document.getElementById('jam-real').innerText = now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
             document.getElementById('tgl-real').innerText = now.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'});
         }, 1000);
 
+        // --- FUNGSI FORMAT JAM (FIXED: Handles Timestamp & String) ---
         function formatJam(data) {
+            // 1. Cek jika data adalah Timestamp Firebase (Ada seconds)
+            if (data.jam_masuk && data.jam_masuk.seconds) {
+                const d = new Date(data.jam_masuk.seconds * 1000);
+                // Ubah ke format jam HH:mm
+                return d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', hour12: false}).replace('.', ':');
+            }
+            // 2. Cek jika String biasa
+            if (typeof data.jam_masuk === 'string') return data.jam_masuk.substring(0,5);
+            
+            // 3. Fallback ke field 'waktu' (jika ada)
             if (data.waktu && data.waktu.seconds) {
                 const d = new Date(data.waktu.seconds * 1000);
                 return d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', hour12: false}).replace('.', ':');
             }
-            if (data.jam_masuk && data.jam_masuk.seconds) {
-                const d = new Date(data.jam_masuk.seconds * 1000);
-                return d.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit', hour12: false}).replace('.', ':');
-            }
-            if (typeof data.jam_masuk === 'string') return data.jam_masuk;
+            
             return "00:00"; 
         }
 
-        // PEMBERSIH ID (BIAR BELUM HADIR GAK KOSONG)
         function cleanID(id) {
             return String(id).trim().replace(/[^a-zA-Z0-9]/g, '');
         }
 
+        // --- LOAD TOTAL SISWA (Populasi) ---
         async function loadMasterSiswa() {
             try {
                 const q = query(collection(db, "users"));
@@ -238,29 +263,35 @@
                 });
 
                 document.getElementById('total-populasi').innerText = allSiswa.length;
-                startMonitorAbsen(); 
+                startMonitorAbsen(); // Lanjut monitoring
             } catch (error) {
                 console.error("Gagal load siswa:", error);
                 document.getElementById('total-populasi').innerText = "ERR";
             }
         }
 
+        // --- MONITORING ABSENSI (REALTIME) ---
         function startMonitorAbsen() {
+            // Target Collection: 'absensi'
             const q = query(collection(db, "absensi"), where("tanggal", "==", today));
 
             onSnapshot(q, (snapshot) => {
                 let tempAbsen = [];
                 snapshot.forEach(doc => {
                     const d = doc.data();
+                    
+                    // AMBIL FOTO: Prioritas 'foto_masuk' (Sesuai database kamu)
+                    const urlFoto = d.foto_masuk || d.foto || d.imageUrl || DEFAULT_IMG;
+
                     if(d.nisn) {
-                        const nisnClean = cleanID(d.nisn);
                         const jamFix = formatJam(d); 
                         tempAbsen.push({
                             ...d,
-                            nisn_clean: nisnClean,
+                            nisn_clean: cleanID(d.nisn),
                             jam_display: jamFix,
-                            nama_display: d.nama || d.name || "Siswa",
-                            kelas_display: d.kelas || "-"
+                            nama_display: d.nama || "Siswa",
+                            kelas_display: d.kelas || "-",
+                            foto_url: urlFoto // Simpan URL Foto
                         });
                     }
                 });
@@ -268,30 +299,39 @@
                 dataAbsenHariIni = tempAbsen;
                 updateTampilanLayar(); 
 
+                // TRIGGER LIVE FEED (POPUP TENGAH)
                 snapshot.docChanges().forEach((change) => {
                     if (change.type === "added") {
                         const val = change.doc.data();
                         const jamFix = formatJam(val);
+                        const urlFotoLive = val.foto_masuk || val.foto || DEFAULT_IMG;
+
                         addToFeed({ 
                             name: val.nama, 
                             kelas: val.kelas, 
                             jam: jamFix, 
-                            status: val.status_terakhir 
+                            status: val.status_terakhir,
+                            foto: urlFotoLive
                         });
                     }
                 });
             });
         }
 
+        // --- RENDER TAMPILAN ---
         function updateTampilanLayar() {
             const listHadir = dataAbsenHariIni; 
             const nisnHadir = listHadir.map(d => d.nisn_clean); 
             
+            // Hitung yang belum hadir
             const listBelum = allSiswa.filter(s => !nisnHadir.includes(s.username));
             listBelum.sort((a,b) => a.kelas.localeCompare(b.kelas));
 
+            // Sortir Gasik (Berdasarkan Jam)
             let sortedByTime = [...listHadir].sort((a,b) => a.jam_display.localeCompare(b.jam_display));
-            const listGasik = sortedByTime.slice(0, 10); 
+            const listGasik = sortedByTime.slice(0, 10); // Ambil 10 teratas
+            
+            // Sortir Telat
             const listTelat = listHadir.filter(d => d.jam_display > JAM_BATAS_TERLAMBAT);
             listTelat.sort((a,b) => b.jam_display.localeCompare(a.jam_display));
 
@@ -299,10 +339,11 @@
             renderScrollList(listTelat, 'list-telat', 'telat');
             renderScrollList(listBelum, 'list-belum', 'belum');
 
-            // UPDATE COUNTER BADGE
+            // Update Badge Angka
             document.getElementById('badge-telat').innerText = listTelat.length;
             document.getElementById('badge-belum').innerText = listBelum.length;
 
+            // Update Statistik Angka
             const countHadirReal = listHadir.filter(d => d.status_terakhir !== 'Izin' && d.status_terakhir !== 'Sakit').length;
             const countIzinReal = listHadir.filter(d => d.status_terakhir === 'Izin' || d.status_terakhir === 'Sakit').length;
             const totalPopulasi = allSiswa.length;
@@ -311,23 +352,16 @@
             document.getElementById('total-izin').innerText = countIzinReal;
             document.getElementById('total-alpha').innerText = listBelum.length;
 
-            // --- LOGIKA PERSENAN (FIX: BIAR GA 0% KALAU DIKIT) ---
+            // Hitung Persentase
             let rawPercent = 0;
             let displayPercent = "0%";
-            
             if (totalPopulasi > 0) {
                 const totalMasuk = countHadirReal + countIzinReal;
                 rawPercent = (totalMasuk / totalPopulasi) * 100;
-
-                // FIX: Kalau ada yang masuk TAPI kurang dari 1%, Tampilkan Desimal
-                if (totalMasuk > 0 && rawPercent < 1) {
-                    displayPercent = rawPercent.toFixed(1) + "%"; // Contoh: 0.2%
-                } else {
-                    displayPercent = Math.round(rawPercent) + "%"; // Contoh: 15%
-                }
+                if (totalMasuk > 0 && rawPercent < 1) displayPercent = rawPercent.toFixed(1) + "%";
+                else displayPercent = Math.round(rawPercent) + "%";
             }
             
-            // Batas warna
             let warnaDonat = 'var(--neon-red)';
             if(rawPercent > 40) warnaDonat = 'var(--neon-gold)';
             if(rawPercent > 75) warnaDonat = 'var(--neon-green)';
@@ -336,10 +370,11 @@
             document.getElementById('persen-text').style.color = warnaDonat;
             
             const chart = document.getElementById('chart-absen');
-            chart.style.setProperty('--p', `${rawPercent * 3.6}deg`); // Derajat tetap presisi
+            chart.style.setProperty('--p', `${rawPercent * 3.6}deg`);
             chart.style.setProperty('--c', warnaDonat);
         }
 
+        // --- RENDER KOLOM GASIK (FOTO BUNDAR) ---
         function renderGasik(data) {
             const el = document.getElementById('gasik-list');
             el.innerHTML = '';
@@ -347,9 +382,11 @@
             data.forEach((d, i) => {
                 let cls = i===0 ? 'rank-1' : (i===1 ? 'rank-2' : (i===2 ? 'rank-3' : ''));
                 let statusBadge = d.jam_display > JAM_BATAS_TERLAMBAT ? '<span style="color:var(--neon-red); font-size:0.7em;">(Telat)</span>' : '';
+                
                 const html = `
                     <div class="rank-item ${cls}">
                         <div class="rank-num">${i+1}</div>
+                        <img src="${d.foto_url}" class="avatar-img" onerror="this.src='${DEFAULT_IMG}'">
                         <div class="rank-nama">${d.nama_display} ${statusBadge}<br><span style="font-size:0.75em; opacity:0.7;">${d.kelas_display}</span></div>
                         <div class="rank-jam">${d.jam_display}</div>
                     </div>`;
@@ -357,6 +394,7 @@
             });
         }
 
+        // --- RENDER LIST TELAT (FOTO KECIL GRAYSCALE) ---
         function renderScrollList(data, id, type) {
             const container = document.getElementById(id);
             container.innerHTML = ''; 
@@ -368,33 +406,49 @@
             }
             let durasi = data.length * 2; if(durasi < 10) durasi = 10; 
             container.style.animation = `scrollUp ${durasi}s linear infinite`;
+            
             data.forEach(d => {
                 const nama = d.name || d.nama || d.nama_display;
                 const kelas = d.kelas || d.kelas_display;
                 const jam = d.jam_display || '';
                 const rowClass = type === 'telat' ? 'row-telat' : 'row-belum';
                 const jamHtml = type === 'telat' ? `<span style="color:var(--neon-red); font-weight:bold;">${jam}</span>` : '';
-                const html = `<div class="alpha-row ${rowClass}"><div style="flex:1; overflow:hidden;"><div class="alpha-nama">${nama}</div><div class="alpha-kelas">${kelas}</div></div><div>${jamHtml}</div></div>`;
+                
+                // Jika Telat, tampilkan foto kecil
+                let fotoHtml = '';
+                if(type === 'telat') {
+                    fotoHtml = `<img src="${d.foto_url || DEFAULT_IMG}" class="avatar-telat" onerror="this.src='${DEFAULT_IMG}'">`;
+                }
+
+                const html = `<div class="alpha-row ${rowClass}"><div style="flex:1; overflow:hidden; display:flex; align-items:center;">${fotoHtml}<div><div class="alpha-nama">${nama}</div><div class="alpha-kelas">${kelas}</div></div></div><div>${jamHtml}</div></div>`;
                 container.insertAdjacentHTML('beforeend', html);
             });
             if(data.length > 5) { container.innerHTML += container.innerHTML; }
         }
 
+        // --- RENDER LIVE BUBBLE (FOTO BESAR) ---
         function addToFeed(d) {
             const con = document.getElementById('live-container');
             if(!con) return;
-            const icon = d.status === 'Terlambat' ? "<i class='bx bxs-alarm-exclamation'></i>" : "<i class='bx bxs-user-check'></i>";
             const color = d.status === 'Terlambat' ? 'var(--neon-red)' : 'var(--neon-green)';
-            const html = `<div class="live-card highlight"><div class="avatar" style="color:${color}; background:rgba(255,255,255,0.1);">${icon}</div><div style="flex:1;"><div style="font-weight:700; font-size:0.9em;">${d.name}</div><div style="font-size:0.7em; opacity:0.7;">${d.kelas}</div></div><div style="font-weight:800; color:${color}; font-size:0.9em;">${d.jam}</div></div>`;
+            
+            const html = `
+            <div class="live-card highlight">
+                <img src="${d.foto}" class="avatar-live" style="border-color:${color};" onerror="this.src='${DEFAULT_IMG}'">
+                <div style="flex:1;">
+                    <div style="font-weight:700; font-size:0.9em;">${d.name}</div>
+                    <div style="font-size:0.7em; opacity:0.7;">${d.kelas}</div>
+                </div>
+                <div style="font-weight:800; color:${color}; font-size:0.9em;">${d.jam}</div>
+            </div>`;
+            
             con.insertAdjacentHTML('afterbegin', html);
             if(con.children.length > 6) con.lastElementChild.remove();
             setTimeout(() => { if(con.firstElementChild) con.firstElementChild.classList.remove('highlight'); }, 2000);
         }
 
-        const texts = [ "PUSAT MONITORING KEDISIPLINAN SISWA", 
-        "FILOSOFI SI GANTENG:",
-        "Sistem Informasi Gerakan Absensi Nir-kertas Terpadu, Efektif, Nan Global",
-        "BERSAMA MEWUJUDKAN GENERASI SMAN 1 PEJAGOAN YANG DISIPLIN & BERKARAKTER"];
+        // Teks Jalan (Typing Effect)
+        const texts = [ "PUSAT MONITORING KEDISIPLINAN SISWA", "FILOSOFI SI GANTENG:", "Sistem Informasi Gerakan Absensi Nir-kertas Terpadu, Efektif, Nan Global", "BERSAMA MEWUJUDKAN GENERASI SMAN 1 PEJAGOAN YANG DISIPLIN & BERKARAKTER"];
         let count=0, index=0, currentText="", letter="", isDeleting=false;
         function type() {
             if(count === texts.length) count=0; currentText = texts[count];
